@@ -43,5 +43,32 @@ CREATE TABLE IF NOT EXISTS enquiries (
   message TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+CREATE TABLE IF NOT EXISTS services (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  vendor_id INTEGER NOT NULL REFERENCES vendors(id),
+  name TEXT NOT NULL,
+  description TEXT,
+  type TEXT NOT NULL DEFAULT 'package' CHECK (type IN ('trial','package','deposit')),
+  price_aud INTEGER NOT NULL CHECK (price_aud > 0),
+  instant INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS bookings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  token TEXT UNIQUE NOT NULL,
+  vendor_token TEXT UNIQUE NOT NULL,
+  vendor_id INTEGER NOT NULL REFERENCES vendors(id),
+  service_id INTEGER NOT NULL REFERENCES services(id),
+  status TEXT NOT NULL DEFAULT 'requested' CHECK (status IN ('requested','accepted','declined','paid')),
+  couple_name TEXT NOT NULL,
+  couple_email TEXT NOT NULL,
+  wedding_date TEXT,
+  guest_count INTEGER,
+  message TEXT,
+  amount_aud INTEGER NOT NULL,
+  fee_aud INTEGER NOT NULL DEFAULT 0,
+  stripe_session_id TEXT,
+  paid_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 CREATE INDEX IF NOT EXISTS idx_vendors_status ON vendors(status);
 `)

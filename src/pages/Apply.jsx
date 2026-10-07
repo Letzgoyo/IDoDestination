@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api.js'
 
-const blank = { business_name: '', contact_name: '', email: '', phone: '', category: '', destination: '', bio: '', price_from_aud: '', offers_trial: false, trial_price_aud: '', based_in_australia: false, instagram: '', website: '' }
+const blank = { business_name: '', contact_name: '', email: '', phone: '', category: '', destination: '', bio: '', services: [{ name: '', description: '', type: 'package', price_aud: '', instant: false }], based_in_australia: false, instagram: '', website: '' }
 
 export default function Apply() {
   const [meta, setMeta] = useState(null)
@@ -9,6 +9,10 @@ export default function Apply() {
   const [state, setState] = useState({ busy: false, done: false, error: '' })
   useEffect(() => { api.meta().then(setMeta) }, [])
   const set = (k) => (e) => setF({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value })
+
+  const setSvc = (i, k) => (e) => setF({ ...f, services: f.services.map((x, j) => (j === i ? { ...x, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value } : x)) })
+  const addSvc = () => setF({ ...f, services: [...f.services, { name: '', description: '', type: 'package', price_aud: '', instant: false }] })
+  const delSvc = (i) => setF({ ...f, services: f.services.filter((_, j) => j !== i) })
 
   async function submit(e) {
     e.preventDefault()
@@ -51,10 +55,27 @@ export default function Apply() {
           </label>
         </div>
         <label>About your business * <small>(min. 40 characters)</small><textarea required rows="5" value={f.bio} onChange={set('bio')} /></label>
-        <label>Packages start from (AUD)<input type="number" min="0" value={f.price_from_aud} onChange={set('price_from_aud')} /></label>
         <label className="check"><input type="checkbox" checked={f.based_in_australia} onChange={set('based_in_australia')} /> I'm based in Australia (trials can be done before the couple travels)</label>
-        <label className="check"><input type="checkbox" checked={f.offers_trial} onChange={set('offers_trial')} /> I offer trials</label>
-        {f.offers_trial && <label>Trial price (AUD)<input type="number" min="0" value={f.trial_price_aud} onChange={set('trial_price_aud')} /></label>}
+        <h2 className="h-sm">Services &amp; pricing <small className="muted">AUD</small></h2>
+        {f.services.map((x, i) => (
+          <fieldset key={i} className="svc-field">
+            <div className="two">
+              <label>Service name *<input required value={x.name} onChange={setSvc(i, 'name')} placeholder="e.g. Bridal trial, Wedding day package" /></label>
+              <label>Price (AUD) *<input required type="number" min="1" value={x.price_aud} onChange={setSvc(i, 'price_aud')} /></label>
+            </div>
+            <div className="two">
+              <label>Type
+                <select value={x.type} onChange={setSvc(i, 'type')}>
+                  <option value="trial">Trial</option><option value="package">Package</option><option value="deposit">Deposit</option>
+                </select>
+              </label>
+              <label>Description<input value={x.description} onChange={setSvc(i, 'description')} /></label>
+            </div>
+            <label className="check"><input type="checkbox" checked={x.instant} onChange={setSvc(i, 'instant')} /> Couples can pay online immediately (otherwise they send a request and you confirm)</label>
+            {f.services.length > 1 && <button type="button" className="link" onClick={() => delSvc(i)}>Remove service</button>}
+          </fieldset>
+        ))}
+        {f.services.length < 8 && <button type="button" className="btn ghost" onClick={addSvc}>+ Add another service</button>}
         <div className="two">
           <label>Instagram handle<input value={f.instagram} onChange={set('instagram')} placeholder="@yourbusiness" /></label>
           <label>Website<input value={f.website} onChange={set('website')} placeholder="https://" /></label>

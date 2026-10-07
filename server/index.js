@@ -4,6 +4,7 @@ import { db } from './db.js'
 import { sendMail } from './mailer.js'
 import { checkPassword, issueToken, requireAdmin, rateLimit } from './auth.js'
 import { DESTINATIONS, CATEGORIES } from './destinations.js'
+import { router as bookings, webhook } from './bookings.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -11,7 +12,9 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL
 const SITE_URL = process.env.SITE_URL || 'http://localhost:5173'
 
 app.set('trust proxy', 1)
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), webhook)
 app.use(express.json({ limit: '50kb' }))
+app.use('/api', bookings)
 
 const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '')
 const int = (v) => (v === '' || v == null || Number.isNaN(Number(v)) ? null : Math.max(0, Math.round(Number(v))))
@@ -30,7 +33,7 @@ app.get('/api/vendors', (_req, res) => {
 app.get('/api/vendors/:slug', (req, res) => {
   const v = db.prepare(`SELECT ${PUBLIC_COLS} FROM vendors WHERE status='approved' AND slug=?`).get(req.params.slug)
   if (!v) return res.status(404).json({ error: 'Vendor not found' })
-  res.json(v)
+  res.json({ ...v, services: db.prepare('SELECT id, name, description, type, price_aud, instant FROM services WHERE vendor_id=? ORDER BY price_aud').all(v.id) })
 })
 
 app.post('/api/apply', rateLimit(5, 60 * 60 * 1000), async (req, res) => {
@@ -45,13 +48,21 @@ app.post('/api/apply', rateLimit(5, 60 * 60 * 1000), async (req, res) => {
     bio: str(b.bio, 2000),
     instagram: str(b.instagram, 100),
     website: str(b.website, 200),
-    price_from_aud: int(b.price_from_aud),
-    offers_trial: b.offers_trial ? 1 : 0,
-    trial_price_aud: b.offers_trial ? int(b.trial_price_aud) : null,
     based_in_australia: b.based_in_australia ? 1 : 0,
   }
   if (!data.business_name || !data.contact_name || !isEmail(data.email) || data.bio.length < 40)
     return res.status(400).json({ error: 'Please complete all required fields (bio needs at least 40 characters).' })
+  const services = (Array.isArray(b.services) ? b.services : []).slice(0, 8).map((x) => ({
+    name: str(x?.name, 120), description: str(x?.description, 500),
+    type: ['trial', 'package', 'deposit'].includes(x?.type) ? x.type : 'package',
+    price_aud: int(x?.price_aud), instant: x?.instant ? 1 : 0,
+  }))
+  if (!services.length || services.some((x) => !x.name || !x.price_aud))
+    return res.status(400).json({ error: 'Add at least one service with a name and a price in AUD.' })
+  const trial = services.find((x) => x.type === 'trial')
+  data.offers_trial = trial ? 1 : 0
+  data.trial_price_aud = trial ? trial.price_aud : null
+  data.price_from_aud = Math.min(...services.map((x) => x.price_aud))
   if (!CATEGORIES.includes(data.category) || !dest)
     return res.status(400).json({ error: 'Please choose a valid category and destination.' })
   if (data.website && !/^https?:\/\//.test(data.website))
@@ -67,6 +78,10 @@ app.post('/api/apply', rateLimit(5, 60 * 60 * 1000), async (req, res) => {
     slug, data.business_name, data.contact_name, data.email, data.phone, data.category, dest.name, dest.country,
     dest.lat, dest.lng, data.bio, data.price_from_aud, data.offers_trial, data.trial_price_aud,
     data.based_in_australia, data.instagram, data.website)
+
+  const { id: vendorId } = db.prepare('SELECT id FROM vendors WHERE slug=?').get(slug)
+  const addService = db.prepare('INSERT INTO services (vendor_id, name, description, type, price_aud, instant) VALUES (?,?,?,?,?,?)')
+  for (const x of services) addService.run(vendorId, x.name, x.description, x.type, x.price_aud, x.instant)
 
   res.status(201).json({ ok: true })
   await sendMail({
@@ -116,7 +131,13 @@ app.post('/api/admin/login', rateLimit(10, 15 * 60 * 1000), (req, res) => {
 })
 
 app.get('/api/admin/vendors', requireAdmin, (_req, res) => {
-  res.json(db.prepare('SELECT * FROM vendors ORDER BY created_at DESC').all())
+  const services = db.prepare('SELECT * FROM services').all()
+  res.json(db.prepare('SELECT * FROM vendors ORDER BY created_at DESC').all().map((v) => ({ ...v, services: services.filter((x) => x.vendor_id === v.id) })))
+})
+
+app.get('/api/admin/bookings', requireAdmin, (_req, res) => {
+  res.json(db.prepare(`SELECT b.id, b.status, b.couple_name, b.couple_email, b.wedding_date, b.amount_aud, b.fee_aud, b.paid_at, b.created_at,
+    s.name AS service_name, v.business_name FROM bookings b JOIN services s ON s.id=b.service_id JOIN vendors v ON v.id=b.vendor_id ORDER BY b.created_at DESC`).all())
 })
 
 app.post('/api/admin/vendors/:id/status', requireAdmin, async (req, res) => {

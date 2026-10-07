@@ -82,7 +82,6 @@ label.check { display: flex; gap: 10px; align-items: center; font-size: .9rem; f
 .panel { background: var(--card); border: 1px solid var(--line); padding: 28px; }
 
 .detail { display: grid; grid-template-columns: 1.4fr 1fr; gap: 48px; align-items: start; }
-.detail .panel { position: sticky; top: 90px; }
 .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 28px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 20px 0; }
 .facts dt { font-size: .7rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
 .facts dd { margin: 4px 0 0; font-family: var(--serif); font-size: 1.4rem; }
@@ -101,3 +100,22 @@ label.check { display: flex; gap: 10px; align-items: center; font-size: .9rem; f
   .logo { font-size: 1.3rem; }
 }
 .filters select { width: auto; flex: 1 1 180px; }
+
+.h-sm { font-size: 1.8rem; margin-top: 1.4em; }
+.h-sm small { font-family: var(--sans); font-size: .8rem; font-weight: 400; }
+.link { background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; font: inherit; font-size: .9rem; padding: 0; text-align: left; }
+.side { display: grid; gap: 12px; position: sticky; top: 90px; }
+.detail .side .panel { position: static; }
+.services { list-style: none; padding: 0; margin: 0 0 32px; display: grid; gap: 12px; }
+.services li { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 20px; background: var(--card); border: 1px solid var(--line); }
+.services li.on { border-color: var(--gold); }
+.services h3 { margin: 6px 0 2px; font-size: 1.3rem; }
+.services p { margin: 0; font-size: .9rem; }
+.svc-right { display: grid; gap: 8px; justify-items: end; text-align: right; font-family: var(--serif); font-size: 1.5rem; white-space: nowrap; }
+.svc-right .btn { font-size: .8rem; padding: 9px 18px; }
+.selected { background: var(--gold-soft); padding: 12px 14px; margin: 0; }
+.svc-field { border: 1px solid var(--line); padding: 16px; display: grid; gap: 14px; margin: 0; background: var(--card); }
+.table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.table th, .table td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.plain { list-style: none; padding: 0; margin: 0 0 16px; font-size: .9rem; }
+@media (max-width: 800px) { .side { position: static; } .services li { flex-direction: column; align-items: flex-start; } .svc-right { justify-items: start; } }

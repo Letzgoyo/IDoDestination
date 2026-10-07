@@ -15,4 +15,12 @@ for (const [name, cat, dest, bio, price, trial, trialPrice, au] of demo) {
   const d = DESTINATIONS.find((x) => x.name === dest)
   ins.run(name.toLowerCase().replace(/\W+/g, '-'), name, 'Demo Owner', 'demo@example.com', cat, d.name, d.country, d.lat, d.lng, bio, price, trial, trialPrice, au)
 }
+const svc = db.prepare('INSERT INTO services (vendor_id, name, description, type, price_aud, instant) VALUES (?,?,?,?,?,?)')
+for (const [name, , , , price, trial, trialPrice] of demo) {
+  const v = db.prepare('SELECT id FROM vendors WHERE slug=?').get(name.toLowerCase().replace(/\W+/g, '-'))
+  if (db.prepare('SELECT 1 FROM services WHERE vendor_id=?').get(v.id)) continue
+  if (trial) svc.run(v.id, 'Bridal trial (Australia)', 'Full-look trial before you travel.', 'trial', trialPrice, 1)
+  svc.run(v.id, 'Wedding day package', 'Full day service at your destination.', 'package', price, 0)
+  svc.run(v.id, 'Booking deposit', 'Secures your date.', 'deposit', Math.round(price * 0.2), 1)
+}
 console.log('Seeded demo vendors')

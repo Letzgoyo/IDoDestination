@@ -8,12 +8,13 @@ export default function Admin() {
   const [token, setToken] = useState(load)
   const [password, setPassword] = useState('')
   const [vendors, setVendors] = useState([])
+  const [bookings, setBookings] = useState([])
   const [filter, setFilter] = useState('pending')
   const [error, setError] = useState('')
 
   const logout = useCallback(() => { try { sessionStorage.removeItem(KEY) } catch { /* ignore */ } setToken('') }, [])
   const refresh = useCallback(() => api.adminVendors(token).then(setVendors).catch((e) => { if (e.status === 401) logout(); else setError(e.message) }), [token, logout])
-  useEffect(() => { if (token) refresh() }, [token, refresh])
+  useEffect(() => { if (token) { refresh(); api.adminBookings(token).then(setBookings).catch(() => {}) } }, [token, refresh])
 
   async function login(e) {
     e.preventDefault()
@@ -43,17 +44,22 @@ export default function Admin() {
     </div>
   )
 
-  const shown = vendors.filter((v) => v.status === filter)
+  const shown = filter === 'bookings' ? [] : vendors.filter((v) => v.status === filter)
   return (
     <div className="wrap section">
       <div className="row between"><h1>Vendor applications</h1><button className="btn ghost" onClick={logout}>Sign out</button></div>
       <div className="tabs">
+        <button className={filter === 'bookings' ? 'on' : ''} onClick={() => setFilter('bookings')}>bookings ({bookings.length})</button>
         {['pending', 'approved', 'rejected'].map((s) => (
           <button key={s} className={filter === s ? 'on' : ''} onClick={() => setFilter(s)}>{s} ({vendors.filter((v) => v.status === s).length})</button>
         ))}
       </div>
       {error && <p className="error">{error}</p>}
-      {shown.length === 0 && <p className="muted">Nothing here.</p>}
+      {filter === 'bookings' && (bookings.length === 0 ? <p className="muted">No bookings yet.</p> : (
+        <table className="table"><thead><tr><th>Date</th><th>Couple</th><th>Vendor</th><th>Service</th><th>AUD</th><th>Fee</th><th>Status</th></tr></thead>
+          <tbody>{bookings.map((x) => <tr key={x.id}><td>{x.created_at}</td><td>{x.couple_name}<br /><span className="muted">{x.couple_email}</span></td><td>{x.business_name}</td><td>{x.service_name}</td><td>{aud(x.amount_aud)}</td><td>{aud(x.fee_aud)}</td><td>{x.status}</td></tr>)}</tbody></table>
+      ))}
+      {filter !== 'bookings' && shown.length === 0 && <p className="muted">Nothing here.</p>}
       {shown.map((v) => (
         <article key={v.id} className="panel admin-item">
           <div className="row between">
@@ -63,9 +69,10 @@ export default function Admin() {
           <p className="pre">{v.bio}</p>
           <p className="muted">
             {v.contact_name} · <a href={`mailto:${v.email}`}>{v.email}</a>{v.phone && ` · ${v.phone}`}<br />
-            From {aud(v.price_from_aud) || '—'} · Trial: {v.offers_trial ? (aud(v.trial_price_aud) || 'yes') : 'no'} · AU-based: {v.based_in_australia ? 'yes' : 'no'}<br />
+            AU-based: {v.based_in_australia ? 'yes' : 'no'}<br />
             {v.instagram && <>IG {v.instagram} · </>}{v.website && <a href={v.website} target="_blank" rel="noreferrer noopener">{v.website}</a>}
           </p>
+          <ul className="plain">{v.services.map((x) => <li key={x.id}>{x.name} ({x.type}) · {aud(x.price_aud)}{x.instant ? ' · pay online' : ' · request'}</li>)}</ul>
           <div className="row">
             {v.status !== 'approved' && <button className="btn" onClick={() => decide(v, 'approved')}>Approve</button>}
             {v.status !== 'rejected' && <button className="btn ghost" onClick={() => decide(v, 'rejected')}>Reject</button>}

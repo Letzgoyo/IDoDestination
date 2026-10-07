@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 
 const points = [
-  ['Always in AUD', 'Quotes, deposits and trials priced in Australian dollars. No euros, pounds or baht, and no exchange-rate surprises.'],
+  ['Book and pay in AUD', 'Services, deposits and trials priced and paid in Australian dollars. No euros, pounds or baht, and no exchange-rate surprises.'],
   ['Trials before you fly', 'Hair and makeup trials at home in Australia, so you know exactly what you are getting before the big day.'],
   ['Every vendor approved', 'Vendors apply and are individually reviewed by our team before they appear on the map.'],
 ]
@@ -13,7 +13,7 @@ export default function Home() {
         <div className="wrap">
           <p className="eyebrow">For Australians marrying overseas</p>
           <h1>Say <em>I do</em> anywhere.<br />Pay in dollars you recognise.</h1>
-          <p className="lead">A curated directory of approved wedding vendors across the world's most loved destinations, with transparent AUD pricing and trials before you travel.</p>
+          <p className="lead">A curated marketplace of approved wedding vendors across the world's most loved destinations. Browse, request or book, and pay in AUD, with trials before you travel.</p>
           <div className="row">
             <Link className="btn" to="/vendors">Explore the map</Link>
             <Link className="btn ghost" to="/apply">Apply as a vendor</Link>

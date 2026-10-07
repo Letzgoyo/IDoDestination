@@ -14,3 +14,9 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the Oxlint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+
+## Marketplace & payments
+- Vendors list **services** (trial / package / deposit) priced in AUD. A service is either *pay online now* or *request* (vendor accepts via an emailed private link, then the couple pays).
+- Couples need no account; each booking has a private link (`/booking/:token`) sent by email.
+- Payments use Stripe Checkout in AUD. Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` (webhook endpoint: `/api/stripe/webhook`, event `checkout.session.completed`). Without a key, bookings are vendor-confirmed requests only.
+- `PLATFORM_FEE_PERCENT` is recorded per booking. Funds land in your Stripe account and vendor payouts are manual until Stripe Connect is added.
