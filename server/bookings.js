@@ -7,6 +7,9 @@ import { stripe } from './stripe.js'
 import { syncByAccount } from './connect.js'
 
 const SITE_URL = process.env.SITE_URL || 'http://localhost:5173'
+const FULL_DAYS = Number(process.env.REFUND_FULL_DAYS ?? 60)
+const PARTIAL_DAYS = Number(process.env.REFUND_PARTIAL_DAYS ?? 30)
+const COOLING_HOURS = 48
 const FEE_PERCENT = Number(process.env.PLATFORM_FEE_PERCENT ?? 10)
 export const paymentsEnabled = () => !!stripe
 
@@ -23,7 +26,7 @@ const getByToken = (token) => db.prepare(`
 const publicView = (b) => ({
   token: b.token, status: b.status, service_name: b.service_name, service_type: b.service_type,
   business_name: b.business_name, vendor_slug: b.vendor_slug, amount_aud: b.amount_aud,
-  wedding_date: b.wedding_date, payment_available: !!stripe && !!b.stripe_ready && b.status !== 'paid' && b.status !== 'declined' && (b.status === 'accepted' || !!b.service_instant),
+  wedding_date: b.wedding_date, refund_aud: b.refund_aud, refund_if_cancelled_aud: refundFor(b), payment_available: !!stripe && !!b.stripe_ready && b.status !== 'paid' && b.status !== 'declined' && (b.status === 'accepted' || !!b.service_instant),
 })
 
 async function checkoutUrl(b) {
@@ -46,10 +49,37 @@ async function checkoutUrl(b) {
   return session.url
 }
 
-async function markPaid(token) {
+// Refund a couple is entitled to if THEY cancel a paid booking. Vendor cancellations and admin refunds bypass this.
+export function refundFor(b, now = Date.now()) {
+  if (b.status !== 'paid') return 0
+  if (b.service_type === 'trial') return 0
+  const hours = (now - new Date(`${b.paid_at.replace(' ', 'T')}Z`).getTime()) / 36e5
+  if (hours < COOLING_HOURS) return b.amount_aud
+  if (!b.wedding_date) return 0
+  const days = (new Date(b.wedding_date).getTime() - now) / 864e5
+  if (days >= FULL_DAYS) return b.amount_aud
+  if (days >= PARTIAL_DAYS) return Math.round(b.amount_aud / 2)
+  return 0
+}
+
+async function issueRefund(b, amount, cancelledBy) {
+  if (amount > 0) {
+    if (!stripe || !b.payment_intent_id) throw new Error('This payment cannot be refunded automatically. Please contact us.')
+    await stripe.refunds.create({ payment_intent: b.payment_intent_id, amount: amount * 100, reverse_transfer: true,
+      refund_application_fee: true, metadata: { booking: b.token, cancelled_by: cancelledBy } })
+  }
+  db.prepare(`UPDATE bookings SET status='cancelled', refund_aud=? WHERE id=?`).run(amount, b.id)
+  const line = b.status !== 'paid' ? 'No payment had been taken, so nothing is owed.' : amount > 0 ? `A$${amount} AUD will be refunded to your original payment method (allow 5-10 business days).` : 'This booking is not eligible for a refund under the cancellation policy.'
+  await sendMail({ to: b.couple_email, subject: `Booking cancelled - ${b.business_name}`,
+    text: `Hi ${b.couple_name},\n\nYour booking for ${b.service_name} with ${b.business_name} has been cancelled${cancelledBy === 'vendor' ? ' by the vendor' : ''}.\n${line}` })
+  await sendMail({ to: b.vendor_email, subject: `Booking cancelled: ${b.couple_name} - ${b.service_name}`,
+    text: `Hi ${b.vendor_contact},\n\nThe booking for ${b.service_name} from ${b.couple_name} was cancelled (${cancelledBy}). Refund: A$${amount} AUD.${amount > 0 ? ' The corresponding transfer and platform fee are reversed automatically.' : ''}` })
+}
+
+async function markPaid(token, paymentIntent) {
   const b = getByToken(token)
   if (!b || b.status === 'paid') return
-  db.prepare(`UPDATE bookings SET status='paid', paid_at=datetime('now') WHERE id=?`).run(b.id)
+  db.prepare(`UPDATE bookings SET status='paid', paid_at=datetime('now'), payment_intent_id=COALESCE(?, payment_intent_id) WHERE id=?`).run(paymentIntent || null, b.id)
   const summary = `${b.service_name} (A$${b.amount_aud} AUD)`
   await sendMail({ to: b.couple_email, subject: `Payment confirmed - ${b.business_name}`,
     text: `Hi ${b.couple_name},\n\nWe've received your payment for ${summary} with ${b.business_name}. They'll be in touch to finalise details.\n\nView your booking: ${SITE_URL}/booking/${b.token}` })
@@ -67,11 +97,12 @@ export const webhook = async (req, res) => {
   }
   if (event.type === 'account.updated') await syncByAccount(event.data.object.id)
   if (event.type === 'checkout.session.completed' && event.data.object.payment_status === 'paid')
-    await markPaid(event.data.object.client_reference_id)
+    await markPaid(event.data.object.client_reference_id, event.data.object.payment_intent)
   res.json({ received: true })
 }
 
 export const router = Router()
+export { issueRefund, getByToken }
 
 router.post('/bookings', rateLimit(10, 60 * 60 * 1000), async (req, res) => {
   const b = req.body || {}
@@ -105,9 +136,21 @@ router.get('/bookings/:token', async (req, res) => {
   // Reconcile with Stripe so payment shows even if the webhook is delayed or not configured.
   if (stripe && b.status !== 'paid' && b.stripe_session_id) {
     const s = await stripe.checkout.sessions.retrieve(b.stripe_session_id).catch(() => null)
-    if (s?.payment_status === 'paid') { await markPaid(b.token); b = getByToken(b.token) }
+    if (s?.payment_status === 'paid') { await markPaid(b.token, s.payment_intent); b = getByToken(b.token) }
   }
   res.json(publicView(b))
+})
+
+router.get('/policy', (_req, res) => res.json({ full_days: FULL_DAYS, partial_days: PARTIAL_DAYS, cooling_hours: COOLING_HOURS }))
+
+router.post('/bookings/:token/cancel', rateLimit(10, 60 * 60 * 1000), async (req, res) => {
+  const b = getByToken(req.params.token)
+  if (!b) return res.status(404).json({ error: 'Booking not found' })
+  if (!['requested', 'accepted', 'paid'].includes(b.status)) return res.status(409).json({ error: `This booking is already ${b.status}.` })
+  try {
+    await issueRefund(b, refundFor(b), 'couple')
+    res.json({ ok: true })
+  } catch (e) { res.status(502).json({ error: e.message }) }
 })
 
 router.post('/bookings/:token/pay', rateLimit(20, 60 * 60 * 1000), async (req, res) => {
@@ -133,6 +176,11 @@ router.post('/vendor-actions/:vtoken', async (req, res) => {
   if (!row) return res.status(404).json({ error: 'Link not found' })
   const b = getByToken(row.token)
   const action = req.body?.action
+  if (action === 'cancel') {
+    if (!['accepted', 'paid'].includes(b.status)) return res.status(409).json({ error: `This booking is ${b.status}, so it can't be cancelled.` })
+    try { await issueRefund(b, b.status === 'paid' ? b.amount_aud : 0, 'vendor'); return res.json({ ok: true, status: 'cancelled' }) }
+    catch (e) { return res.status(502).json({ error: e.message }) }
+  }
   if (!['accept', 'decline'].includes(action)) return res.status(400).json({ error: 'Invalid action' })
   if (b.status !== 'requested') return res.status(409).json({ error: `This booking is already ${b.status}.` })
   const status = action === 'accept' ? 'accepted' : 'declined'

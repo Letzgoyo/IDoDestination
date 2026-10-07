@@ -7,6 +7,7 @@ const MSG = {
   accepted: 'The vendor accepted your request.',
   declined: 'Sorry, the vendor is unable to take this request.',
   paid: 'Payment received. The vendor will be in touch to finalise details.',
+  cancelled: 'This booking has been cancelled.',
 }
 
 export default function Booking() {
@@ -16,6 +17,17 @@ export default function Booking() {
   const [busy, setBusy] = useState(false)
 
   useEffect(() => { api.booking(token).then(setB).catch((e) => setError(e.message)) }, [token])
+
+  async function cancel() {
+    const r = b.refund_if_cancelled_aud
+    const msg = b.status === 'paid'
+      ? (r > 0 ? `Cancel this booking? You will be refunded ${aud(r)} AUD.` : 'Cancel this booking? Under the cancellation policy you will NOT receive a refund.')
+      : 'Cancel this request?'
+    if (!window.confirm(msg)) return
+    setBusy(true)
+    try { await api.cancel(token); setB(await api.booking(token)); setError('') } catch (e) { setError(e.message) }
+    setBusy(false)
+  }
 
   async function pay() {
     setBusy(true)
@@ -33,6 +45,9 @@ export default function Booking() {
         <p><span className="tag">{b.status}</span></p>
         <p>{MSG[b.status]}</p>
         {b.payment_available && <button className="btn" onClick={pay} disabled={busy}>{busy ? 'Redirecting…' : `Pay ${aud(b.amount_aud)} AUD`}</button>}
+        {b.status === 'cancelled' && b.refund_aud > 0 && <p>Refunded {aud(b.refund_aud)} AUD to your original payment method (5-10 business days).</p>}
+        {['requested', 'accepted', 'paid'].includes(b.status) && <p><button className="link" onClick={cancel} disabled={busy}>Cancel booking</button></p>}
+        {b.status === 'paid' && <p className="muted">Refund if you cancel today: {aud(b.refund_if_cancelled_aud)} AUD. <Link to="/cancellation-policy">Cancellation policy</Link></p>}
         {error && <p className="error">{error}</p>}
       </div>
       <p><Link to={`/vendors/${b.vendor_slug}`}>View vendor</Link> · Keep this page's link to return to your booking.</p>

@@ -24,6 +24,7 @@ export default function VendorAction() {
         {b.message && <p className="pre">{b.message}</p>}
         <p><span className="tag">{b.status}</span></p>
         {b.status === 'requested' && <div className="row"><button className="btn" onClick={() => respond('accept')}>Accept</button><button className="btn ghost" onClick={() => respond('decline')}>Decline</button></div>}
+        {['accepted', 'paid'].includes(b.status) && <p><button className="btn ghost" onClick={() => window.confirm('Cancel this booking? The couple will be refunded in full.') && respond('cancel')}>Cancel booking (full refund)</button></p>}
         {error && <p className="error">{error}</p>}
       </div>
     </div>

@@ -4,7 +4,7 @@ import { db } from './db.js'
 import { sendMail } from './mailer.js'
 import { checkPassword, issueToken, requireAdmin, rateLimit } from './auth.js'
 import { DESTINATIONS, CATEGORIES } from './destinations.js'
-import { router as bookings, webhook } from './bookings.js'
+import { router as bookings, webhook, issueRefund, getByToken } from './bookings.js'
 import { router as connect } from './connect.js'
 import { stripe } from './stripe.js'
 import { randomBytes } from 'node:crypto'
@@ -143,8 +143,18 @@ app.get('/api/admin/vendors', requireAdmin, (_req, res) => {
 })
 
 app.get('/api/admin/bookings', requireAdmin, (_req, res) => {
-  res.json(db.prepare(`SELECT b.id, b.status, b.couple_name, b.couple_email, b.wedding_date, b.amount_aud, b.fee_aud, b.paid_at, b.created_at,
+  res.json(db.prepare(`SELECT b.id, b.status, b.couple_name, b.couple_email, b.wedding_date, b.amount_aud, b.fee_aud, b.paid_at, b.refund_aud, b.created_at,
     s.name AS service_name, v.business_name FROM bookings b JOIN services s ON s.id=b.service_id JOIN vendors v ON v.id=b.vendor_id ORDER BY b.created_at DESC`).all())
+})
+
+app.post('/api/admin/bookings/:id/refund', requireAdmin, async (req, res) => {
+  const row = db.prepare('SELECT token FROM bookings WHERE id=?').get(req.params.id)
+  if (!row) return res.status(404).json({ error: 'Not found' })
+  const b = getByToken(row.token)
+  if (b.status !== 'paid') return res.status(409).json({ error: 'Only paid bookings can be refunded.' })
+  const amount = req.body?.amount_aud == null ? b.amount_aud : int(req.body.amount_aud)
+  if (amount == null || amount > b.amount_aud) return res.status(400).json({ error: 'Invalid refund amount.' })
+  try { await issueRefund(b, amount, 'admin'); res.json({ ok: true }) } catch (e) { res.status(502).json({ error: e.message }) }
 })
 
 app.post('/api/admin/vendors/:id/status', requireAdmin, async (req, res) => {

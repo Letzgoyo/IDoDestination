@@ -27,6 +27,12 @@ export default function Admin() {
     } catch (err) { setError(err.message) }
   }
 
+  async function refund(x) {
+    const input = window.prompt(`Refund amount in AUD (max ${x.amount_aud}). Leave blank for a full refund.`, String(x.amount_aud))
+    if (input === null) return
+    try { await api.adminRefund(token, x.id, input === '' ? null : Number(input)); setBookings(await api.adminBookings(token)) } catch (e) { setError(e.message) }
+  }
+
   async function decide(v, status) {
     const notes = status === 'rejected' ? window.prompt('Optional note to include in the rejection email:') ?? '' : ''
     await api.setStatus(token, v.id, status, notes).catch((e) => setError(e.message))
@@ -56,8 +62,8 @@ export default function Admin() {
       </div>
       {error && <p className="error">{error}</p>}
       {filter === 'bookings' && (bookings.length === 0 ? <p className="muted">No bookings yet.</p> : (
-        <table className="table"><thead><tr><th>Date</th><th>Couple</th><th>Vendor</th><th>Service</th><th>AUD</th><th>Fee</th><th>Status</th></tr></thead>
-          <tbody>{bookings.map((x) => <tr key={x.id}><td>{x.created_at}</td><td>{x.couple_name}<br /><span className="muted">{x.couple_email}</span></td><td>{x.business_name}</td><td>{x.service_name}</td><td>{aud(x.amount_aud)}</td><td>{aud(x.fee_aud)}</td><td>{x.status}</td></tr>)}</tbody></table>
+        <table className="table"><thead><tr><th>Date</th><th>Couple</th><th>Vendor</th><th>Service</th><th>AUD</th><th>Fee</th><th>Status</th><th></th></tr></thead>
+          <tbody>{bookings.map((x) => <tr key={x.id}><td>{x.created_at}</td><td>{x.couple_name}<br /><span className="muted">{x.couple_email}</span></td><td>{x.business_name}</td><td>{x.service_name}</td><td>{aud(x.amount_aud)}</td><td>{aud(x.fee_aud)}</td><td>{x.status}{x.refund_aud > 0 && ` (refunded ${aud(x.refund_aud)})`}</td><td>{x.status === 'paid' && <button className="link" onClick={() => refund(x)}>Refund</button>}</td></tr>)}</tbody></table>
       ))}
       {filter !== 'bookings' && shown.length === 0 && <p className="muted">Nothing here.</p>}
       {shown.map((v) => (

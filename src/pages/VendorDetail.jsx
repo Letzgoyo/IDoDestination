@@ -36,7 +36,7 @@ function BookingForm({ service, onClose }) {
       <label>Message <small>(optional)</small><textarea rows="4" value={f.message} onChange={set('message')} /></label>
       {state.error && <p className="error">{state.error}</p>}
       <button className="btn" disabled={state.busy}>{state.busy ? 'Please wait…' : service.online ? 'Continue to payment' : 'Send request'}</button>
-      <small className="muted">{service.online ? 'You pay securely in AUD. ' : 'No payment now. The vendor confirms, then you pay in AUD. '}</small>
+      <small className="muted">{service.online ? 'You pay securely in AUD. ' : 'No payment now. The vendor confirms, then you pay in AUD. '}<Link to="/cancellation-policy">Cancellation policy</Link></small>
     </form>
   )
 }

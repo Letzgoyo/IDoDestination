@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   vendor_token TEXT UNIQUE NOT NULL,
   vendor_id INTEGER NOT NULL REFERENCES vendors(id),
   service_id INTEGER NOT NULL REFERENCES services(id),
-  status TEXT NOT NULL DEFAULT 'requested' CHECK (status IN ('requested','accepted','declined','paid')),
+  status TEXT NOT NULL DEFAULT 'requested' CHECK (status IN ('requested','accepted','declined','paid','cancelled')),
   couple_name TEXT NOT NULL,
   couple_email TEXT NOT NULL,
   wedding_date TEXT,
@@ -67,6 +67,8 @@ CREATE TABLE IF NOT EXISTS bookings (
   amount_aud INTEGER NOT NULL,
   fee_aud INTEGER NOT NULL DEFAULT 0,
   stripe_session_id TEXT,
+  payment_intent_id TEXT,
+  refund_aud INTEGER NOT NULL DEFAULT 0,
   paid_at TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -80,3 +82,18 @@ for (const [name, ddl] of [
   ['stripe_account_id', 'TEXT'],
   ['stripe_ready', 'INTEGER NOT NULL DEFAULT 0'],
 ]) if (!cols.includes(name)) db.exec(`ALTER TABLE vendors ADD COLUMN ${name} ${ddl}`)
+
+// Databases created before cancellations existed need the bookings table rebuilt (CHECK constraint can't be altered).
+const bookingsSql = db.prepare("SELECT sql FROM sqlite_master WHERE name='bookings'").get().sql
+if (!bookingsSql.includes('cancelled')) {
+  const old = db.prepare('PRAGMA table_info(bookings)').all().map((c) => c.name)
+  db.exec('BEGIN; ALTER TABLE bookings RENAME TO bookings_old;')
+  db.exec(`CREATE TABLE bookings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, token TEXT UNIQUE NOT NULL, vendor_token TEXT UNIQUE NOT NULL,
+    vendor_id INTEGER NOT NULL REFERENCES vendors(id), service_id INTEGER NOT NULL REFERENCES services(id),
+    status TEXT NOT NULL DEFAULT 'requested' CHECK (status IN ('requested','accepted','declined','paid','cancelled')),
+    couple_name TEXT NOT NULL, couple_email TEXT NOT NULL, wedding_date TEXT, guest_count INTEGER, message TEXT,
+    amount_aud INTEGER NOT NULL, fee_aud INTEGER NOT NULL DEFAULT 0, stripe_session_id TEXT, payment_intent_id TEXT,
+    refund_aud INTEGER NOT NULL DEFAULT 0, paid_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')));`)
+  db.exec(`INSERT INTO bookings (${old.join(',')}) SELECT ${old.join(',')} FROM bookings_old; DROP TABLE bookings_old; COMMIT;`)
+}
