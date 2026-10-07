@@ -7,6 +7,7 @@ import Apply from './pages/Apply.jsx'
 import Admin from './pages/Admin.jsx'
 import Booking from './pages/Booking.jsx'
 import VendorAction from './pages/VendorAction.jsx'
+import VendorPayouts from './pages/VendorPayouts.jsx'
 
 function ScrollTop() {
   const { pathname } = useLocation()
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/apply" element={<Apply />} />
           <Route path="/booking/:token" element={<Booking />} />
           <Route path="/vendor-action/:vtoken" element={<VendorAction />} />
+          <Route path="/vendor/:mtoken" element={<VendorPayouts />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<div className="wrap section"><h1>Page not found</h1><Link className="btn" to="/">Back home</Link></div>} />
         </Routes>

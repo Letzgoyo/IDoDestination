@@ -72,3 +72,11 @@ CREATE TABLE IF NOT EXISTS bookings (
 );
 CREATE INDEX IF NOT EXISTS idx_vendors_status ON vendors(status);
 `)
+
+// Lightweight migrations for columns added after first release.
+const cols = db.prepare('PRAGMA table_info(vendors)').all().map((c) => c.name)
+for (const [name, ddl] of [
+  ['manage_token', 'TEXT'],
+  ['stripe_account_id', 'TEXT'],
+  ['stripe_ready', 'INTEGER NOT NULL DEFAULT 0'],
+]) if (!cols.includes(name)) db.exec(`ALTER TABLE vendors ADD COLUMN ${name} ${ddl}`)

@@ -25,7 +25,7 @@ function BookingForm({ service, onClose }) {
 
   return (
     <form className="panel form" onSubmit={submit}>
-      <div className="row between"><h3>{service.instant ? 'Book' : 'Request'}</h3><button type="button" className="link" onClick={onClose}>Change</button></div>
+      <div className="row between"><h3>{service.online ? 'Book' : 'Request'}</h3><button type="button" className="link" onClick={onClose}>Change</button></div>
       <p className="selected"><strong>{service.name}</strong><br />{aud(service.price_aud)} AUD</p>
       <label>Your name<input required value={f.name} onChange={set('name')} /></label>
       <label>Email<input required type="email" value={f.email} onChange={set('email')} /></label>
@@ -35,8 +35,8 @@ function BookingForm({ service, onClose }) {
       </div>
       <label>Message <small>(optional)</small><textarea rows="4" value={f.message} onChange={set('message')} /></label>
       {state.error && <p className="error">{state.error}</p>}
-      <button className="btn" disabled={state.busy}>{state.busy ? 'Please wait…' : service.instant ? 'Continue to payment' : 'Send request'}</button>
-      <small className="muted">{service.instant ? 'You pay securely in AUD. ' : 'No payment now. The vendor confirms, then you pay in AUD. '}</small>
+      <button className="btn" disabled={state.busy}>{state.busy ? 'Please wait…' : service.online ? 'Continue to payment' : 'Send request'}</button>
+      <small className="muted">{service.online ? 'You pay securely in AUD. ' : 'No payment now. The vendor confirms, then you pay in AUD. '}</small>
     </form>
   )
 }
@@ -99,7 +99,7 @@ export default function VendorDetail() {
               </div>
               <div className="svc-right">
                 <strong>{aud(s.price_aud)}</strong>
-                <button className="btn" onClick={() => { setService(s); setAsk(false) }}>{s.instant ? 'Book now' : 'Request'}</button>
+                <button className="btn" onClick={() => { setService(s); setAsk(false) }}>{s.online ? 'Book now' : 'Request'}</button>
               </div>
             </li>
           ))}

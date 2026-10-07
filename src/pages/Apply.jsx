@@ -71,7 +71,7 @@ export default function Apply() {
               </label>
               <label>Description<input value={x.description} onChange={setSvc(i, 'description')} /></label>
             </div>
-            <label className="check"><input type="checkbox" checked={x.instant} onChange={setSvc(i, 'instant')} /> Couples can pay online immediately (otherwise they send a request and you confirm)</label>
+            <label className="check"><input type="checkbox" checked={x.instant} onChange={setSvc(i, 'instant')} /> Couples can pay online immediately once you've connected payouts (otherwise they send a request and you confirm)</label>
             {f.services.length > 1 && <button type="button" className="link" onClick={() => delSvc(i)}>Remove service</button>}
           </fieldset>
         ))}

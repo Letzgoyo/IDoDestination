@@ -5,6 +5,9 @@ import { sendMail } from './mailer.js'
 import { checkPassword, issueToken, requireAdmin, rateLimit } from './auth.js'
 import { DESTINATIONS, CATEGORIES } from './destinations.js'
 import { router as bookings, webhook } from './bookings.js'
+import { router as connect } from './connect.js'
+import { stripe } from './stripe.js'
+import { randomBytes } from 'node:crypto'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -15,6 +18,7 @@ app.set('trust proxy', 1)
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), webhook)
 app.use(express.json({ limit: '50kb' }))
 app.use('/api', bookings)
+app.use('/api', connect)
 
 const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '')
 const int = (v) => (v === '' || v == null || Number.isNaN(Number(v)) ? null : Math.max(0, Math.round(Number(v))))
@@ -31,9 +35,12 @@ app.get('/api/vendors', (_req, res) => {
 })
 
 app.get('/api/vendors/:slug', (req, res) => {
-  const v = db.prepare(`SELECT ${PUBLIC_COLS} FROM vendors WHERE status='approved' AND slug=?`).get(req.params.slug)
+  const v = db.prepare(`SELECT ${PUBLIC_COLS}, stripe_ready FROM vendors WHERE status='approved' AND slug=?`).get(req.params.slug)
   if (!v) return res.status(404).json({ error: 'Vendor not found' })
-  res.json({ ...v, services: db.prepare('SELECT id, name, description, type, price_aud, instant FROM services WHERE vendor_id=? ORDER BY price_aud').all(v.id) })
+  const { stripe_ready, ...pub } = v
+  const services = db.prepare('SELECT id, name, description, type, price_aud, instant FROM services WHERE vendor_id=? ORDER BY price_aud').all(v.id)
+  // `online` = the couple can actually pay now (vendor opted in AND is connected to Stripe).
+  res.json({ ...pub, services: services.map(({ instant, ...x }) => ({ ...x, online: !!(instant && stripe && stripe_ready) })) })
 })
 
 app.post('/api/apply', rateLimit(5, 60 * 60 * 1000), async (req, res) => {
@@ -147,9 +154,14 @@ app.post('/api/admin/vendors/:id/status', requireAdmin, async (req, res) => {
   const v = db.prepare('SELECT * FROM vendors WHERE id=?').get(req.params.id)
   if (!v) return res.status(404).json({ error: 'Not found' })
   db.prepare(`UPDATE vendors SET status=?, admin_notes=?, reviewed_at=datetime('now') WHERE id=?`).run(status, notes, v.id)
+  let manageToken = v.manage_token
+  if (status === 'approved' && !manageToken) {
+    manageToken = randomBytes(18).toString('base64url')
+    db.prepare('UPDATE vendors SET manage_token=? WHERE id=?').run(manageToken, v.id)
+  }
   res.json({ ok: true })
   if (status === 'approved')
-    await sendMail({ to: v.email, subject: 'You\'re approved on I Do Destination', text: `Hi ${v.contact_name},\n\nGreat news - ${v.business_name} is now live: ${SITE_URL}/vendors/${v.slug}\n\nI Do Destination` })
+    await sendMail({ to: v.email, subject: 'You\'re approved on I Do Destination', text: `Hi ${v.contact_name},\n\nGreat news - ${v.business_name} is now live: ${SITE_URL}/vendors/${v.slug}\n\nTo receive payouts for online bookings in your own currency, connect your bank account with Stripe (private link, keep it safe): ${SITE_URL}/vendor/${manageToken}\n\nI Do Destination` })
   if (status === 'rejected')
     await sendMail({ to: v.email, subject: 'Your I Do Destination application', text: `Hi ${v.contact_name},\n\nThanks for applying. Unfortunately we're unable to list ${v.business_name} at this time.${notes ? `\n\n${notes}` : ''}\n\nI Do Destination` })
 })

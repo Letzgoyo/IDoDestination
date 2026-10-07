@@ -69,7 +69,7 @@ export default function Admin() {
           <p className="pre">{v.bio}</p>
           <p className="muted">
             {v.contact_name} · <a href={`mailto:${v.email}`}>{v.email}</a>{v.phone && ` · ${v.phone}`}<br />
-            AU-based: {v.based_in_australia ? 'yes' : 'no'}<br />
+            AU-based: {v.based_in_australia ? 'yes' : 'no'} · Payouts: {v.stripe_ready ? 'connected' : v.stripe_account_id ? 'onboarding incomplete' : 'not connected'}<br />
             {v.instagram && <>IG {v.instagram} · </>}{v.website && <a href={v.website} target="_blank" rel="noreferrer noopener">{v.website}</a>}
           </p>
           <ul className="plain">{v.services.map((x) => <li key={x.id}>{x.name} ({x.type}) · {aud(x.price_aud)}{x.instant ? ' · pay online' : ' · request'}</li>)}</ul>
