@@ -24,7 +24,7 @@ export default function App() {
         <Link to="/" className="logo">I Do <em>Destination</em></Link>
         <nav>
           <NavLink to="/vendors">Find vendors</NavLink>
-          <NavLink to="/apply">List your business</NavLink>
+          <NavLink to="/apply" className="nav-quiet">For vendors</NavLink>
         </nav>
       </header>
       <main>
@@ -43,7 +43,8 @@ export default function App() {
       </main>
       <footer className="footer">
         <span className="logo">I Do <em>Destination</em></span>
-        <p>Every vendor is reviewed by our team. All pricing and trials in Australian dollars. <Link to="/cancellation-policy">Cancellation policy</Link></p>
+        <p>Every vendor is checked by our team. All prices and trials in Australian dollars.</p>
+        <p><Link to="/cancellation-policy">Cancellation policy</Link> · <Link to="/apply">Are you a wedding vendor? Apply to be listed</Link></p>
       </footer>
     </>
   )

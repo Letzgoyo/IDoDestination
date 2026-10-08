@@ -44,23 +44,23 @@ export default function Home() {
     <>
       <section className="hero2">
         <div className="wrap hero-copy">
-          <p className="eyebrow">For Australians marrying overseas</p>
-          <h1>Marry anywhere.<br /><em>Pay in AUD.</em></h1>
-          <p className="lead">The marketplace of approved wedding vendors for destination weddings. See the price in Australian dollars, book your trial before you fly, and never get caught out by exchange rates.</p>
+          <p className="eyebrow">Wedding vendors for Australians marrying overseas</p>
+          <h1>Find your wedding team.<br /><em>Pay in Australian dollars.</em></h1>
+          <p className="lead">Hand-picked makeup artists, photographers, venues and more for your wedding abroad. Every price is in AUD, and you can try before you fly.</p>
           <div className="row">
-            <Link className="btn gold" to="/vendors">Explore the map</Link>
-            <a className="btn ghost light" href="#how">How it works</a>
+            <Link className="btn" to="/vendors">Find vendors</Link>
+            <a className="btn ghost" href="#destinations">Browse destinations</a>
           </div>
           <ul className="proof">
-            <li><strong>AUD</strong> pricing &amp; payments</li>
-            <li><strong>Hand-approved</strong> vendors</li>
+            <li><strong>Every price</strong> in AUD</li>
+            <li><strong>Every vendor</strong> checked by us</li>
             <li><strong>Trials</strong> before you travel</li>
           </ul>
         </div>
         <svg className="routes" viewBox="-10 95 740 270" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
           <defs>
             <pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="currentColor" /></pattern>
-            <linearGradient id="trail" x1="0" x2="1"><stop offset="0" stopColor="#d3ab5e" stopOpacity=".1" /><stop offset="1" stopColor="#d3ab5e" /></linearGradient>
+            <linearGradient id="trail" x1="0" x2="1"><stop offset="0" stopColor="#b8923f" stopOpacity=".15" /><stop offset="1" stopColor="#b8923f" /></linearGradient>
           </defs>
           <rect x="-10" y="95" width="740" height="270" fill="url(#dots)" className="dotgrid" />
           {SPOTS.map((s, i) => <path key={s.name} d={arc(s.xy)} className="route" style={{ animationDelay: `${i * 0.25}s` }} />)}
@@ -76,33 +76,33 @@ export default function Home() {
 
       <section className="section wrap">
         <Reveal>
-          <p className="eyebrow">The problem we solve</p>
-          <h2 className="display">Overseas weddings shouldn't come with <em>currency anxiety</em>.</h2>
+          <p className="eyebrow">Why couples love it</p>
+          <h2 className="display">No more <em>exchange-rate</em> surprises.</h2>
         </Reveal>
         <div className="compare">
           <Reveal className="cmp cmp-bad">
-            <h3>Booking direct, overseas</h3>
+            <h3>Booking overseas on your own</h3>
             <ul>
-              <li>Quotes in euros, baht, pounds or dollars</li>
+              <li>Quotes in euros, baht, pounds or US dollars</li>
               <li>Exchange rate moves between deposit and final payment</li>
               <li>Card and conversion fees you don't see coming</li>
-              <li>No trial, so you meet your makeup artist on the day</li>
+              <li>No trial, so you meet your makeup artist on the day itself</li>
             </ul>
           </Reveal>
           <Reveal className="cmp cmp-good" delay={120}>
-            <h3>On I Do Destination</h3>
+            <h3>Booking with I Do Destination</h3>
             <ul>
               <li>Every price shown and charged in AUD</li>
               <li>The price you book is the price you pay</li>
-              <li>Pay securely online, refunds in AUD too</li>
-              <li>Trials with Australian-based artists before you fly</li>
+              <li>Pay securely online, with refunds in AUD too</li>
+              <li>Hair and makeup trials with Australian-based artists before you fly</li>
             </ul>
           </Reveal>
         </div>
       </section>
 
-      <section className="section wrap">
-        <Reveal><p className="eyebrow">Destinations</p><h2 className="display">Where are you saying <em>I do?</em></h2></Reveal>
+      <section id="destinations" className="section wrap">
+        <Reveal><p className="eyebrow">Destinations</p><h2 className="display">Where are you saying <em>I do</em>?</h2></Reveal>
         <div className="dest-grid">
           {DESTS.map(([name, country, g], i) => (
             <Reveal key={name} delay={i * 60} className="dest-wrap">
@@ -118,13 +118,13 @@ export default function Home() {
 
       <section id="how" className="how">
         <div className="wrap">
-          <Reveal><p className="eyebrow">How it works</p><h2 className="display">From first look to <em>booked</em>, in AUD.</h2></Reveal>
+          <Reveal><p className="eyebrow">How it works</p><h2 className="display">From first look to <em>booked</em>, simply.</h2></Reveal>
           <ol className="steps">
             {[
-              ['Discover', 'Browse approved vendors on the map by destination and category.'],
-              ['Book or request', 'Book instantly and pay in AUD, or send a request and the vendor confirms.'],
+              ['Find', 'Browse approved vendors on the map by destination and category.'],
+              ['Book or request', 'Book and pay in AUD straight away, or send a request and the vendor confirms.'],
               ['Try before you fly', 'Do your hair and makeup trial at home with an Australian-based artist.'],
-              ['Say I do', 'Your vendors are locked in, paid in dollars, with a clear cancellation policy.'],
+              ['Say I do', 'Your team is locked in and paid in dollars, with a clear cancellation policy.'],
             ].map(([t, d], i) => (
               <Reveal key={t} delay={i * 90}><li><span className="num">{String(i + 1).padStart(2, '0')}</span><h3>{t}</h3><p>{d}</p></li></Reveal>
             ))}
@@ -133,7 +133,7 @@ export default function Home() {
       </section>
 
       <section className="section wrap">
-        <Reveal><p className="eyebrow">Everything you need</p><h2 className="display">Every kind of <em>wedding vendor</em>.</h2></Reveal>
+        <Reveal><p className="eyebrow">Browse by service</p><h2 className="display">Everyone you need for <em>the big day</em>.</h2></Reveal>
         <Reveal className="chips" delay={100}>
           {CATS.map((c) => <Link key={c} to={`/vendors?category=${encodeURIComponent(c)}`} className="chip">{c}</Link>)}
         </Reveal>
@@ -142,10 +142,10 @@ export default function Home() {
       <section className="band2">
         <div className="wrap band2-in">
           <Reveal>
-            <p className="eyebrow">For wedding professionals</p>
-            <h2 className="display">Reach couples who are ready to <em>book</em>.</h2>
-            <p className="lead">Join a hand-picked marketplace of vendors. Get paid out in your own currency while couples pay in AUD.</p>
-            <Link className="btn gold" to="/apply">Apply to be listed</Link>
+            <p className="eyebrow">Ready when you are</p>
+            <h2 className="display">Start finding your <em>wedding team</em>.</h2>
+            <p className="lead">Explore approved vendors on the map, compare prices in AUD, and book with confidence.</p>
+            <Link className="btn" to="/vendors">Find vendors</Link>
           </Reveal>
         </div>
       </section>

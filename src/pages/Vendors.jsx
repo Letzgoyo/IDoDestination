@@ -27,7 +27,8 @@ export default function Vendors() {
   return (
     <div className="wrap section">
       <p className="eyebrow">Directory</p>
-      <h1>Find your vendors</h1>
+      <h1>Find your wedding vendors</h1>
+      <p className="lead">Every vendor is checked by our team, and every price is in Australian dollars.</p>
       <div className="filters">
         <input placeholder="Search vendors" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search" />
         <select value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Category">
