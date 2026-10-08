@@ -22,9 +22,9 @@ function Reveal({ children, className = '', delay = 0 }) {
 }
 
 const DESTS = [
-  ['Bali', 'Indonesia', 'g-bali'], ['Santorini', 'Greece', 'g-santorini'], ['Tuscany', 'Italy', 'g-tuscany'],
+  ['Bali', 'Indonesia', 'g-bali'], ['Santorini', 'Greece', 'g-santorini', '/images/santorini.webp', '50% 40%'], ['Tuscany', 'Italy', 'g-tuscany'],
   ['Fiji', 'Fiji', 'g-fiji'], ['Phuket', 'Thailand', 'g-phuket'], ['Provence', 'France', 'g-provence'],
-  ['Maldives', 'Maldives', 'g-maldives'], ['Lake Como', 'Italy', 'g-como'],
+  ['Maldives', 'Maldives', 'g-maldives'], ['Lake Como', 'Italy', 'g-como', '/images/lake-como.webp', '50% 100%'],
 ]
 const CATS = ['Hair & Makeup', 'Photography', 'Videography', 'Venue', 'Planner & Coordinator', 'Florist', 'Celebrant', 'Catering', 'Music & DJ']
 
@@ -81,9 +81,9 @@ export default function Home() {
       <section id="destinations" className="section wrap">
         <Reveal><p className="eyebrow">Destinations</p><h2 className="display">Where are you saying <em>I do</em>?</h2></Reveal>
         <div className="dest-grid">
-          {DESTS.map(([name, country, g], i) => (
+          {DESTS.map(([name, country, g, photo, pos], i) => (
             <Reveal key={name} delay={i * 60} className="dest-wrap">
-              <Link to={`/vendors?destination=${encodeURIComponent(name)}`} className={`dest ${g}`}>
+              <Link to={`/vendors?destination=${encodeURIComponent(name)}`} className={`dest ${g}${photo ? ' has-photo' : ''}`} style={photo ? { '--photo': `url(${photo})`, '--pos': pos } : undefined}>
                 <span className="dest-country">{country}</span>
                 <span className="dest-name">{name}</span>
                 <span className="dest-go">View vendors →</span>

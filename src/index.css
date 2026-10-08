@@ -166,6 +166,7 @@ label.check { display: flex; gap: 10px; align-items: center; font-size: .9rem; f
 .dest-name { font-family: var(--serif); font-size: 2.1rem; line-height: 1.05; }
 .dest-go { font-size: .8rem; margin-top: 10px; opacity: 0; transform: translateY(6px); transition: all .3s; }
 .dest:hover .dest-go { opacity: 1; transform: none; }
+.dest.has-photo::before { background: var(--photo) var(--pos, center) / cover no-repeat; }
 .g-bali { --bg: radial-gradient(circle at 70% 20%, #f4c27a, transparent 45%), linear-gradient(160deg, #2f6f5e, #0f3a34); }
 .g-santorini { --bg: radial-gradient(circle at 30% 15%, #fff6e6, transparent 40%), linear-gradient(170deg, #5a8fd0, #1d3f7a); }
 .g-tuscany { --bg: radial-gradient(circle at 75% 20%, #ffd89a, transparent 45%), linear-gradient(165deg, #b9803f, #5d3b1e); }
@@ -213,3 +214,5 @@ label.check { display: flex; gap: 10px; align-items: center; font-size: .9rem; f
 }
 
 .display em, h2 em { font-style: normal; color: var(--gold); }
+.dest.has-photo::after { background: linear-gradient(0deg, rgba(10,8,6,.78), rgba(10,8,6,.3) 38%, transparent 62%); }
+.dest.has-photo .dest-name, .dest.has-photo .dest-country { text-shadow: 0 1px 12px rgba(0,0,0,.45); }
