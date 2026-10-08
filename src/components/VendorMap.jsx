@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import L from 'leaflet'
+import { api } from '../api.js'
 
 export default function VendorMap({ vendors, onSelect, height = 520, zoom }) {
   const el = useRef(null)
@@ -8,12 +9,12 @@ export default function VendorMap({ vendors, onSelect, height = 520, zoom }) {
 
   useEffect(() => {
     map.current = L.map(el.current, { scrollWheelZoom: false, worldCopyJump: true }).setView([15, 100], 2)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-      maxZoom: 18,
-    }).addTo(map.current)
     layer.current = L.layerGroup().addTo(map.current)
-    return () => map.current.remove()
+    let cancelled = false
+    api.meta().then(({ map: m }) => {
+      if (!cancelled) L.tileLayer(m.tiles, { attribution: m.attribution, maxZoom: 18 }).addTo(map.current)
+    })
+    return () => { cancelled = true; map.current.remove() }
   }, [])
 
   useEffect(() => {

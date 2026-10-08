@@ -1,9 +1,14 @@
 import { Link } from 'react-router-dom'
-import { aud } from '../api.js'
+import { aud, photoUrl } from '../api.js'
 
 export default function VendorCard({ v }) {
   return (
     <Link to={`/vendors/${v.slug}`} className="card">
+      <div className="card-photo">
+        {v.cover_photo_id
+          ? <img src={photoUrl(v.cover_photo_id)} alt={`${v.business_name}, ${v.category} in ${v.destination}`} loading="lazy" />
+          : <span className="card-photo-ph" aria-hidden="true">{v.category}</span>}
+      </div>
       <div className="card-top">
         <span className="eyebrow">{v.category}</span>
         {v.offers_trial ? <span className="tag">Trial available</span> : null}

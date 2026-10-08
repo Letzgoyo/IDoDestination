@@ -34,4 +34,22 @@ export const api = {
   setStatus: (token, id, status, notes) => request(`/admin/vendors/${id}/status`, { method: 'POST', body: { status, notes }, token }),
 }
 
+// Shrink a photo in the browser before upload (max 1600px wide, JPEG) so phones' multi-MB images are fine.
+export async function prepareImage(file, maxW = 1600) {
+  const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' })
+  const scale = Math.min(1, maxW / bmp.width)
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.round(bmp.width * scale)
+  canvas.height = Math.round(bmp.height * scale)
+  canvas.getContext('2d').drawImage(bmp, 0, 0, canvas.width, canvas.height)
+  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Could not read that image'))), 'image/jpeg', 0.86))
+}
+
+export async function uploadPhoto(token, blob) {
+  const res = await fetch(`/api/uploads/${token}`, { method: 'POST', headers: { 'Content-Type': blob.type || 'image/jpeg' }, body: blob })
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Photo upload failed')
+}
+
+export const photoUrl = (id) => `/api/photos/${id}`
+
 export const aud = (n) => (n == null ? null : `A$${n.toLocaleString('en-AU')}`)

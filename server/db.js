@@ -72,6 +72,15 @@ CREATE TABLE IF NOT EXISTS bookings (
   paid_at TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+CREATE TABLE IF NOT EXISTS vendor_photos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  vendor_id INTEGER NOT NULL REFERENCES vendors(id),
+  position INTEGER NOT NULL DEFAULT 0,
+  mime TEXT NOT NULL,
+  data BLOB NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_photos_vendor ON vendor_photos(vendor_id);
 CREATE INDEX IF NOT EXISTS idx_vendors_status ON vendors(status);
 `)
 
@@ -79,6 +88,7 @@ CREATE INDEX IF NOT EXISTS idx_vendors_status ON vendors(status);
 const cols = db.prepare('PRAGMA table_info(vendors)').all().map((c) => c.name)
 for (const [name, ddl] of [
   ['manage_token', 'TEXT'],
+  ['apply_token', 'TEXT'],
   ['stripe_account_id', 'TEXT'],
   ['stripe_ready', 'INTEGER NOT NULL DEFAULT 0'],
 ]) if (!cols.includes(name)) db.exec(`ALTER TABLE vendors ADD COLUMN ${name} ${ddl}`)

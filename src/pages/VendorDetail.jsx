@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { api, aud } from '../api.js'
+import { api, aud, photoUrl } from '../api.js'
 import VendorMap from '../components/VendorMap.jsx'
 
 const TYPE = { trial: 'Trial', package: 'Package', deposit: 'Deposit' }
@@ -82,6 +82,11 @@ export default function VendorDetail() {
         <p className="eyebrow">{v.category}</p>
         <h1>{v.business_name}</h1>
         <p className="muted">{v.destination}, {v.country}{v.based_in_australia ? ' · Australian-based' : ''}</p>
+        {v.photos?.length > 0 && (
+          <div className={`gallery g${Math.min(v.photos.length, 4)}`}>
+            {v.photos.slice(0, 5).map((id, i) => <img key={id} src={photoUrl(id)} alt={`${v.business_name} photo ${i + 1}`} loading={i ? 'lazy' : 'eager'} />)}
+          </div>
+        )}
         <p className="lead pre">{v.bio}</p>
         <p>
           {v.instagram && <a href={`https://instagram.com/${v.instagram.replace(/^@/, '')}`} target="_blank" rel="noreferrer noopener">Instagram</a>}

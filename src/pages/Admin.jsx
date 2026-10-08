@@ -4,6 +4,17 @@ import { api, aud } from '../api.js'
 const KEY = 'ido_admin_token'
 const load = () => { try { return sessionStorage.getItem(KEY) || '' } catch { return '' } }
 
+function AdminPhoto({ id, token }) {
+  const [src, setSrc] = useState('')
+  useEffect(() => {
+    let url = ''
+    fetch(`/api/admin/photos/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => (r.ok ? r.blob() : null)).then((b) => { if (b) { url = URL.createObjectURL(b); setSrc(url) } })
+    return () => url && URL.revokeObjectURL(url)
+  }, [id, token])
+  return src ? <a href={src} target="_blank" rel="noreferrer noopener"><img src={src} alt="Vendor submission" /></a> : <span className="thumb-ph" />
+}
+
 export default function Admin() {
   const [token, setToken] = useState(load)
   const [password, setPassword] = useState('')
@@ -72,6 +83,7 @@ export default function Admin() {
             <div><span className="eyebrow">{v.category} · {v.destination}, {v.country}</span><h3>{v.business_name}</h3></div>
             <span className="muted">{v.created_at}</span>
           </div>
+          {v.photos?.length > 0 ? <div className="admin-photos">{v.photos.map((id) => <AdminPhoto key={id} id={id} token={token} />)}</div> : <p className="error">No photos uploaded.</p>}
           <p className="pre">{v.bio}</p>
           <p className="muted">
             {v.contact_name} · <a href={`mailto:${v.email}`}>{v.email}</a>{v.phone && ` · ${v.phone}`}<br />

@@ -6,6 +6,7 @@ import { checkPassword, issueToken, requireAdmin, rateLimit } from './auth.js'
 import { DESTINATIONS, CATEGORIES } from './destinations.js'
 import { router as bookings, webhook, issueRefund, getByToken } from './bookings.js'
 import { router as connect } from './connect.js'
+import { router as photos } from './photos.js'
 import { stripe } from './stripe.js'
 import { randomBytes } from 'node:crypto'
 
@@ -16,6 +17,7 @@ const SITE_URL = process.env.SITE_URL || 'http://localhost:5173'
 
 app.set('trust proxy', 1)
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), webhook)
+app.use('/api', photos)
 app.use(express.json({ limit: '50kb' }))
 app.use('/api', bookings)
 app.use('/api', connect)
@@ -25,10 +27,16 @@ const int = (v) => (v === '' || v == null || Number.isNaN(Number(v)) ? null : Ma
 const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
-const PUBLIC_COLS = `id, slug, business_name, category, destination, country, lat, lng, bio,
+const omitTokens = (v) => Object.fromEntries(Object.entries(v).filter(([k]) => !k.endsWith('_token')))
+const PUBLIC_COLS = `id, slug, (SELECT id FROM vendor_photos WHERE vendor_id=vendors.id ORDER BY position LIMIT 1) AS cover_photo_id, business_name, category, destination, country, lat, lng, bio,
   price_from_aud, offers_trial, trial_price_aud, based_in_australia, instagram, website`
 
-app.get('/api/meta', (_req, res) => res.json({ destinations: DESTINATIONS, categories: CATEGORIES }))
+// Map tiles default to OpenStreetMap (no API key). Set MAP_TILES_URL (e.g. a MapTiler/Stadia URL with your key) for heavier traffic.
+const MAP = {
+  tiles: process.env.MAP_TILES_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  attribution: process.env.MAP_ATTRIBUTION || '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+}
+app.get('/api/meta', (_req, res) => res.json({ destinations: DESTINATIONS, categories: CATEGORIES, map: MAP }))
 
 app.get('/api/vendors', (_req, res) => {
   res.json(db.prepare(`SELECT ${PUBLIC_COLS} FROM vendors WHERE status='approved' ORDER BY business_name`).all())
@@ -40,7 +48,7 @@ app.get('/api/vendors/:slug', (req, res) => {
   const { stripe_ready, ...pub } = v
   const services = db.prepare('SELECT id, name, description, type, price_aud, instant FROM services WHERE vendor_id=? ORDER BY price_aud').all(v.id)
   // `online` = the couple can actually pay now (vendor opted in AND is connected to Stripe).
-  res.json({ ...pub, services: services.map(({ instant, ...x }) => ({ ...x, online: !!(instant && stripe && stripe_ready) })) })
+  res.json({ ...pub, photos: db.prepare('SELECT id FROM vendor_photos WHERE vendor_id=? ORDER BY position').all(v.id).map((x) => x.id), services: services.map(({ instant, ...x }) => ({ ...x, online: !!(instant && stripe && stripe_ready) })) })
 })
 
 app.post('/api/apply', rateLimit(5, 60 * 60 * 1000), async (req, res) => {
@@ -79,10 +87,11 @@ app.post('/api/apply', rateLimit(5, 60 * 60 * 1000), async (req, res) => {
   let slug = base
   for (let i = 2; db.prepare('SELECT 1 FROM vendors WHERE slug=?').get(slug); i++) slug = `${base}-${i}`
 
-  db.prepare(`INSERT INTO vendors (slug, business_name, contact_name, email, phone, category, destination, country,
+  const applyToken = randomBytes(18).toString('base64url')
+  db.prepare(`INSERT INTO vendors (slug, apply_token, business_name, contact_name, email, phone, category, destination, country,
       lat, lng, bio, price_from_aud, offers_trial, trial_price_aud, based_in_australia, instagram, website)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(
-    slug, data.business_name, data.contact_name, data.email, data.phone, data.category, dest.name, dest.country,
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(
+    slug, applyToken, data.business_name, data.contact_name, data.email, data.phone, data.category, dest.name, dest.country,
     dest.lat, dest.lng, data.bio, data.price_from_aud, data.offers_trial, data.trial_price_aud,
     data.based_in_australia, data.instagram, data.website)
 
@@ -90,7 +99,7 @@ app.post('/api/apply', rateLimit(5, 60 * 60 * 1000), async (req, res) => {
   const addService = db.prepare('INSERT INTO services (vendor_id, name, description, type, price_aud, instant) VALUES (?,?,?,?,?,?)')
   for (const x of services) addService.run(vendorId, x.name, x.description, x.type, x.price_aud, x.instant)
 
-  res.status(201).json({ ok: true })
+  res.status(201).json({ ok: true, upload_token: applyToken })
   await sendMail({
     to: data.email,
     subject: 'We received your I Do Destination application',
@@ -139,7 +148,8 @@ app.post('/api/admin/login', rateLimit(10, 15 * 60 * 1000), (req, res) => {
 
 app.get('/api/admin/vendors', requireAdmin, (_req, res) => {
   const services = db.prepare('SELECT * FROM services').all()
-  res.json(db.prepare('SELECT * FROM vendors ORDER BY created_at DESC').all().map((v) => ({ ...v, services: services.filter((x) => x.vendor_id === v.id) })))
+  const photoRows = db.prepare('SELECT id, vendor_id FROM vendor_photos ORDER BY position').all()
+  res.json(db.prepare('SELECT * FROM vendors ORDER BY created_at DESC').all().map((row) => ({ ...omitTokens(row), services: services.filter((x) => x.vendor_id === row.id), photos: photoRows.filter((x) => x.vendor_id === row.id).map((x) => x.id) })))
 })
 
 app.get('/api/admin/bookings', requireAdmin, (_req, res) => {
