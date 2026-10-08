@@ -135,17 +135,12 @@ label.check { display: flex; gap: 10px; align-items: center; font-size: .9rem; f
 .proof { list-style: none; padding: 0; margin: 32px 0 0; display: flex; gap: 12px 32px; flex-wrap: wrap; color: var(--muted); font-size: .85rem; }
 .proof strong { color: var(--ink); font-weight: 600; }
 .hero-art { display: flex; justify-content: center; }
-.arch-art { width: 100%; max-width: 400px; height: auto; overflow: visible; }
-.arch-outline { fill: none; stroke: var(--gold); stroke-width: 1.2; opacity: .6; }
-.arch-edge { fill: none; stroke: var(--gold); stroke-width: 2; }
-.sun { fill: #fbe3b4; opacity: .7; }
-.sprig path { stroke: var(--gold); stroke-width: 2; stroke-linecap: round; }
-.sprig ellipse { fill: color-mix(in srgb, var(--gold) 18%, transparent); stroke: var(--gold); stroke-width: 1.5; }
-.rings circle { fill: none; stroke: var(--gold); stroke-width: 4; }
-.rings .gem { fill: #fff; stroke: var(--gold); stroke-width: 2.5; }
+.arch-photo { position: relative; width: 100%; max-width: 400px; aspect-ratio: 4 / 5.2; }
+.arch-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 45%; border-radius: 999px 999px 6px 6px; display: block; box-shadow: 0 30px 60px -25px rgba(70, 40, 20, .45); }
+.arch-ring { position: absolute; inset: -14px -14px 14px 14px; border: 1.5px solid var(--gold); border-radius: 999px 999px 6px 6px; opacity: .7; pointer-events: none; }
 @media (max-width: 900px) {
   .hero-grid { grid-template-columns: 1fr; padding-top: 48px; padding-bottom: 56px; }
-  .arch-art { max-width: 260px; }
+  .arch-photo { max-width: 300px; margin: 0 14px 0 0; }
 }
 
 .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s ease, transform .8s ease; }

@@ -1,41 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 
-// Decorative wedding-arch illustration (no photos needed).
-const LEAVES = [0, 1, 2, 3, 4, 5, 6]
-function Sprig({ x, y, rot = 0, scale = 1 }) {
+function ArchPhoto() {
   return (
-    <g transform={`translate(${x} ${y}) rotate(${rot}) scale(${scale})`} className="sprig">
-      <path d="M0 0 C 12 -60 -12 -130 6 -190" fill="none" />
-      {LEAVES.map((i) => (
-        <ellipse key={i} cx={i % 2 ? 15 : -15} cy={-22 - i * 26} rx="15" ry="6" transform={`rotate(${i % 2 ? -50 : 50} ${i % 2 ? 15 : -15} ${-22 - i * 26})`} />
-      ))}
-    </g>
-  )
-}
-
-function ArchArt() {
-  return (
-    <svg className="arch-art" viewBox="0 0 440 540" aria-hidden="true">
-      <defs>
-        <linearGradient id="archfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#fff4ea" /><stop offset="1" stopColor="#f7dcd0" /></linearGradient>
-        <clipPath id="archclip"><path d="M20 520 V220 C20 100 110 20 220 20 C330 20 420 100 420 220 V520 Z" /></clipPath>
-      </defs>
-      <path d="M44 520 V230 C44 120 126 46 232 46 C338 46 416 120 416 230 V520" className="arch-outline" />
-      <g clipPath="url(#archclip)">
-        <rect width="440" height="540" fill="url(#archfill)" />
-        <circle cx="300" cy="160" r="70" className="sun" />
-        <Sprig x="70" y="540" rot="-8" scale="1.25" />
-        <Sprig x="360" y="540" rot="10" scale="1.1" />
-        <Sprig x="215" y="540" rot="2" scale=".7" />
-      </g>
-      <path d="M20 520 V220 C20 100 110 20 220 20 C330 20 420 100 420 220 V520" className="arch-edge" />
-      <path d="M20 520 H420" className="arch-edge" />
-      <g className="rings" transform="translate(220 360)">
-        <circle cx="-30" cy="0" r="44" /><circle cx="30" cy="0" r="44" />
-        <path d="M30 -44 l-10 -16 l10 -14 l10 14 z" className="gem" />
-      </g>
-    </svg>
+    <div className="arch-photo">
+      <span className="arch-ring" aria-hidden="true" />
+      <img src="/images/hero.webp" alt="A bride in a white gown looking out over Lake Como from a jetty" width="952" height="688" fetchpriority="high" />
+    </div>
   )
 }
 
@@ -82,7 +53,7 @@ export default function Home() {
               <li><strong>Trials</strong> before you travel</li>
             </ul>
           </div>
-          <div className="hero-art"><ArchArt /></div>
+          <div className="hero-art"><ArchPhoto /></div>
         </div>
       </section>
 
