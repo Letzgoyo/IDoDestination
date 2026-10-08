@@ -83,7 +83,7 @@ export default function VendorDetail() {
         <Link to="/vendors" className="muted">← All vendors</Link>
         <p className="eyebrow">{v.category}</p>
         <h1>{v.business_name}</h1>
-        <p className="muted">{v.destination}, {v.country}{v.based_in_australia ? ' · Australian-based' : ''}</p>
+        <p className="muted">{v.destination}{v.based_in_australia ? ' · Australian-based' : ''}</p>
         {v.photos?.length > 0 && (
           <div className={`gallery g${Math.min(v.photos.length, 4)}`}>
             {v.photos.slice(0, 5).map((id, i) => <img key={id} src={photoUrl(id)} alt={`${v.business_name} photo ${i + 1}`} loading={i ? 'lazy' : 'eager'} />)}

@@ -82,7 +82,7 @@ export default function Admin() {
       {shown.map((v) => (
         <article key={v.id} className="panel admin-item">
           <div className="row between">
-            <div><span className="eyebrow">{v.category} · {v.destination}, {v.country}</span><h3>{v.business_name}</h3></div>
+            <div><span className="eyebrow">{v.category} · {v.destination}</span><h3>{v.business_name}</h3></div>
             <span className="muted">{v.created_at}</span>
           </div>
           {v.photos?.length > 0 ? <div className="admin-photos">{v.photos.map((id) => <AdminPhoto key={id} id={id} token={token} />)}</div> : <p className="error">No photos uploaded.</p>}

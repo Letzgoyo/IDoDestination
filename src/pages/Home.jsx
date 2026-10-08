@@ -23,9 +23,13 @@ function Reveal({ children, className = '', delay = 0 }) {
 }
 
 const DESTS = [
-  ['Bali', 'Indonesia', 'g-bali', '/images/bali.webp', '50% 62%'], ['Santorini', 'Greece', 'g-santorini', '/images/santorini.webp', '50% 40%'], ['Tuscany', 'Italy', 'g-tuscany', '/images/tuscany.webp', '30% 50%'],
-  ['Fiji', 'Fiji', 'g-fiji', '/images/fiji.webp', '50% 60%'], ['Phuket', 'Thailand', 'g-phuket', '/images/phuket.webp', '50% 50%'], ['Provence', 'France', 'g-provence', '/images/provence.webp', '50% 60%'],
-  ['Maldives', 'Maldives', 'g-maldives', '/images/maldives.webp', '50% 55%'], ['Lake Como', 'Italy', 'g-como', '/images/lake-como.webp', '50% 100%'],
+  ['Indonesia', 'Bali and beyond', 'g-bali', '/images/bali.webp', '50% 62%'],
+  ['Greece', 'Santorini, Mykonos', 'g-santorini', '/images/santorini.webp', '50% 40%'],
+  ['Italy', 'Tuscany, Amalfi, Como', 'g-tuscany', '/images/tuscany.webp', '30% 50%'],
+  ['Fiji', 'Island weddings', 'g-fiji', '/images/fiji.webp', '50% 60%'],
+  ['Thailand', 'Phuket, Samui', 'g-phuket', '/images/phuket.webp', '50% 50%'],
+  ['France', 'Provence, Paris', 'g-provence', '/images/provence.webp', '50% 60%'],
+  ['Maldives', 'Beach and resort', 'g-maldives', '/images/maldives.webp', '50% 55%'],
 ]
 const CATS = ['Hair & Makeup', 'Photography', 'Videography', 'Venue', 'Planner & Coordinator', 'Florist', 'Celebrant', 'Catering', 'Music & DJ']
 
@@ -92,6 +96,13 @@ export default function Home() {
               </Link>
             </Reveal>
           ))}
+          <Reveal delay={DESTS.length * 60} className="dest-wrap">
+            <Link to="/vendors" className="dest g-all">
+              <span className="dest-country">Everywhere else too</span>
+              <span className="dest-name">See all destinations</span>
+              <span className="dest-go">Open the map →</span>
+            </Link>
+          </Reveal>
         </div>
       </section>
 

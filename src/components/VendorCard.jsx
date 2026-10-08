@@ -14,7 +14,7 @@ export default function VendorCard({ v }) {
         {v.offers_trial ? <span className="tag">Trial available</span> : null}
       </div>
       <h3>{v.business_name}</h3>
-      <p className="muted">{v.destination}, {v.country}</p>
+      <p className="muted">{v.destination}</p>
       <p className="clamp">{v.bio}</p>
       <div className="card-foot">
         <span>{v.price_from_aud ? <>From <strong>{aud(v.price_from_aud)}</strong> AUD</> : 'Quote on request'}</span>

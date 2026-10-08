@@ -63,7 +63,7 @@ export default function Apply() {
           <label>Destination you serve *
             <select required value={f.destination} onChange={set('destination')}>
               <option value="">Select…</option>
-              {meta?.destinations.map((d) => <option key={d.name} value={d.name}>{d.name}, {d.country}</option>)}
+              {meta?.destinations.map((d) => <option key={d.name} value={d.name}>{d.name}</option>)}
             </select>
           </label>
         </div>

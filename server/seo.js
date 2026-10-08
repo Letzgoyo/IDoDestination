@@ -32,11 +32,11 @@ export function metaFor(path) {
     if (v) {
       const url = `${SITE_URL}/vendors/${v.slug}`
       const image = v.photo ? `${SITE_URL}/api/photos/${v.photo}` : DEFAULT_IMAGE
-      const desc = clip(`${v.category} for weddings in ${v.destination}, ${v.country}. ${v.bio}`.replace(/\s+/g, ' '), 158)
+      const desc = clip(`${v.category} for weddings in ${v.destination}. ${v.bio}`.replace(/\s+/g, ' '), 158)
       return {
         title: `${v.business_name} | ${v.category} in ${v.destination} | ${NAME}`, desc, image, url, type: 'article',
         ld: { '@context': 'https://schema.org', '@type': 'LocalBusiness', name: v.business_name, description: clip(v.bio, 400), url, image,
-          areaServed: `${v.destination}, ${v.country}`, ...(v.website ? { sameAs: [v.website] } : {}) },
+          areaServed: v.destination, ...(v.website ? { sameAs: [v.website] } : {}) },
       }
     }
     return { title: `Vendor not found | ${NAME}`, desc: DEFAULT_DESC, noindex: true, status: 404 }

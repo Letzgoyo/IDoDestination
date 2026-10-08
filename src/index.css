@@ -254,3 +254,6 @@ label.check { display: flex; gap: 10px; align-items: center; font-size: .9rem; f
 .legal ul { padding-left: 1.2em; display: grid; gap: .4em; }
 .placeholder { background: #fff3b0; color: #1c1917; padding: 0 4px; border-radius: 2px; }
 .draft-note { background: var(--gold-soft); border: 1px solid var(--gold); padding: 10px 14px; font-size: .85rem; }
+
+.g-all { --bg: radial-gradient(circle at 70% 20%, #f6e6c4, transparent 50%), linear-gradient(165deg, #9a7b3f, #4a3a1c); }
+.g-all .dest-go { opacity: 1; transform: none; }

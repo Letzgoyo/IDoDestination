@@ -11,6 +11,9 @@ import { seoRoutes, pageHandler } from './seo.js'
 import { stripe } from './stripe.js'
 import { randomBytes } from 'node:crypto'
 
+// Destinations used to be specific places (Bali, Tuscany...). Move any existing vendors onto their country.
+for (const d of DESTINATIONS) db.prepare('UPDATE vendors SET destination=?, country=?, lat=?, lng=? WHERE country=? AND (destination != ? OR lat != ? OR lng != ?)').run(d.name, d.country, d.lat, d.lng, d.country, d.name, d.lat, d.lng)
+
 const app = express()
 const PORT = process.env.PORT || 3001
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL
