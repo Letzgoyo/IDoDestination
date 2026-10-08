@@ -1,16 +1,13 @@
 import { useEffect, useRef } from 'react'
 import L from 'leaflet'
-import { feature } from 'topojson-client'
-import atlas from 'world-atlas/countries-50m.json'
+import geo from '../data/destinations.geo.json'
 import { api } from '../api.js'
 
-// Our destination names -> the country names used in the world-atlas data.
-const ATLAS_NAME = { 'United States': 'United States of America', 'Cook Islands': 'Cook Is.' }
 const GOLD = '#b8923f'
 const INK = '#1c1917'
 
-const countries = feature(atlas, atlas.objects.countries).features
-const shapeFor = (name) => countries.find((f) => f.properties.name === (ATLAS_NAME[name] || name))
+// Country outlines are pre-built in src/data (see scripts/build-geo.mjs), so the map needs no extra packages at runtime.
+const shapeFor = (name) => geo.features.find((f) => f.properties.name === name)
 
 // A map of clickable country regions. Countries with vendors are shaded and clickable; the rest stay plain.
 export default function RegionMap({ destinations, counts, selected, onSelect, height = 520 }) {
@@ -37,8 +34,7 @@ export default function RegionMap({ destinations, counts, selected, onSelect, he
       const shape = shapeFor(d.name)
       const label = `${d.name} · ${n} vendor${n === 1 ? '' : 's'}`
       const isSel = selected === d.name
-      // Island nations use the pin below: Fiji's outline crosses the date line (which draws a stray line) and the rest are specks.
-      if (shape && !d.island) {
+      if (shape) {
         const style = n
           ? { color: isSel ? INK : GOLD, weight: isSel ? 2.5 : 1.5, fillColor: GOLD, fillOpacity: isSel ? 0.62 : 0.34 }
           : { color: '#8a8178', weight: 0.8, fillColor: '#8a8178', fillOpacity: 0.04 }

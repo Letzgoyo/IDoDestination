@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { api } from '../api.js'
 import { usePageMeta } from '../usePageMeta.js'
 import VendorCard from '../components/VendorCard.jsx'
+import ErrorBoundary from '../components/ErrorBoundary.jsx'
 
 // Loaded on demand: the country shapes are a large file the rest of the site doesn't need.
 const RegionMap = lazy(() => import('../components/RegionMap.jsx'))
@@ -52,9 +53,11 @@ export default function Vendors() {
       {vendors && (
         <>
           <p className="muted map-hint">{withVendors.length ? 'Select a shaded country on the map to see its vendors.' : 'No vendors match these filters yet.'}</p>
-          <Suspense fallback={<div className="map" style={{ height: 520 }} />}>
-            <RegionMap destinations={meta?.destinations || []} counts={counts} selected={destination} onSelect={setDestination} />
-          </Suspense>
+          <ErrorBoundary height={220} message="The map couldn't load. You can still browse by country below.">
+            <Suspense fallback={<div className="map" style={{ height: 520 }} />}>
+              <RegionMap destinations={meta?.destinations || []} counts={counts} selected={destination} onSelect={setDestination} />
+            </Suspense>
+          </ErrorBoundary>
           <div className="chips country-chips" role="group" aria-label="Browse by country">
             {withVendors.map((d) => (
               <button key={d.name} className={`chip${destination === d.name ? ' on' : ''}`} aria-pressed={destination === d.name} onClick={() => setDestination(destination === d.name ? '' : d.name)}>

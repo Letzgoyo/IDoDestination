@@ -267,3 +267,5 @@ label.check { display: flex; gap: 10px; align-items: center; font-size: .9rem; f
 .chip.clear { border-style: dashed; }
 .pin.sel { background: var(--gold); color: var(--ink); border-color: var(--ink); }
 .leaflet-interactive { cursor: pointer; }
+
+.map-failed { display: grid; place-content: center; justify-items: center; gap: 12px; text-align: center; padding: 20px; background: var(--card); }
