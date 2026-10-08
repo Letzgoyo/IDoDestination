@@ -1,23 +1,42 @@
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 
-// Equirectangular projection onto a 1000x500 canvas, with the seam moved to the Atlantic so
-// Europe, Asia and the Pacific sit side by side with Australia in the middle.
-const project = (lat, lng) => [(((lng + 30 + 360) % 360) / 360) * 1000, ((90 - lat) / 180) * 500]
-const HOME = project(-33.87, 151.21) // Sydney
+// Decorative wedding-arch illustration (no photos needed).
+const LEAVES = [0, 1, 2, 3, 4, 5, 6]
+function Sprig({ x, y, rot = 0, scale = 1 }) {
+  return (
+    <g transform={`translate(${x} ${y}) rotate(${rot}) scale(${scale})`} className="sprig">
+      <path d="M0 0 C 12 -60 -12 -130 6 -190" fill="none" />
+      {LEAVES.map((i) => (
+        <ellipse key={i} cx={i % 2 ? 15 : -15} cy={-22 - i * 26} rx="15" ry="6" transform={`rotate(${i % 2 ? -50 : 50} ${i % 2 ? 15 : -15} ${-22 - i * 26})`} />
+      ))}
+    </g>
+  )
+}
 
-const SPOTS = [
-  ['Bali', -8.41, 115.19, 1], ['Fiji', -17.71, 178.07, 1], ['Phuket', 7.88, 98.39, 1], ['Tuscany', 43.77, 11.25, 1],
-  ['Santorini', 36.39, 25.46, 1], ['Provence', 43.95, 5.05], ['Mallorca', 39.7, 3.02], ['Maldives', 3.2, 73.22, 1],
-  ['Hawaii', 20.8, -156.33, 1], ['Cotswolds', 51.83, -1.84], ['Kyoto', 35.01, 135.77],
-].map(([name, lat, lng, label]) => ({ name, label, xy: project(lat, lng) }))
-
-// Curved flight path from Sydney, bowed upward.
-function arc([x, y]) {
-  const [hx, hy] = HOME
-  const mx = (hx + x) / 2
-  const lift = Math.min(90, Math.abs(x - hx) * 0.25 + 15)
-  return `M${hx} ${hy} Q${mx} ${Math.min(hy, y) - lift} ${x} ${y}`
+function ArchArt() {
+  return (
+    <svg className="arch-art" viewBox="0 0 440 540" aria-hidden="true">
+      <defs>
+        <linearGradient id="archfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#fff4ea" /><stop offset="1" stopColor="#f7dcd0" /></linearGradient>
+        <clipPath id="archclip"><path d="M20 520 V220 C20 100 110 20 220 20 C330 20 420 100 420 220 V520 Z" /></clipPath>
+      </defs>
+      <path d="M44 520 V230 C44 120 126 46 232 46 C338 46 416 120 416 230 V520" className="arch-outline" />
+      <g clipPath="url(#archclip)">
+        <rect width="440" height="540" fill="url(#archfill)" />
+        <circle cx="300" cy="160" r="70" className="sun" />
+        <Sprig x="70" y="540" rot="-8" scale="1.25" />
+        <Sprig x="360" y="540" rot="10" scale="1.1" />
+        <Sprig x="215" y="540" rot="2" scale=".7" />
+      </g>
+      <path d="M20 520 V220 C20 100 110 20 220 20 C330 20 420 100 420 220 V520" className="arch-edge" />
+      <path d="M20 520 H420" className="arch-edge" />
+      <g className="rings" transform="translate(220 360)">
+        <circle cx="-30" cy="0" r="44" /><circle cx="30" cy="0" r="44" />
+        <path d="M30 -44 l-10 -16 l10 -14 l10 14 z" className="gem" />
+      </g>
+    </svg>
+  )
 }
 
 function Reveal({ children, className = '', delay = 0 }) {
@@ -43,35 +62,28 @@ export default function Home() {
   return (
     <>
       <section className="hero2">
-        <div className="wrap hero-copy">
-          <p className="eyebrow">Wedding vendors for Australians marrying overseas</p>
-          <h1>Find your wedding team.<br /><em>Pay in Australian dollars.</em></h1>
-          <p className="lead">Hand-picked makeup artists, photographers, venues and more for your wedding abroad. Every price is in AUD, and you can try before you fly.</p>
-          <div className="row">
-            <Link className="btn" to="/vendors">Find vendors</Link>
-            <a className="btn ghost" href="#destinations">Browse destinations</a>
+        <div className="wrap hero-grid">
+          <div className="hero-copy">
+            <p className="eyebrow">For Australians marrying overseas</p>
+            <h1>Find the vendors for your <em>destination wedding</em>.</h1>
+            <p className="lead">Hand-picked makeup artists, photographers, venues and more across the world's favourite wedding destinations, with prices in AUD and trials before you fly.</p>
+            <div className="row">
+              <Link className="btn" to="/vendors">Find vendors</Link>
+              <a className="btn ghost" href="#destinations">Browse destinations</a>
+            </div>
+            <div className="quick">
+              {['Hair & Makeup', 'Photography', 'Venue'].map((c) => (
+                <Link key={c} to={`/vendors?category=${encodeURIComponent(c)}`} className="chip">{c}</Link>
+              ))}
+            </div>
+            <ul className="proof">
+              <li><strong>Every vendor</strong> checked by us</li>
+              <li><strong>Every price</strong> in AUD</li>
+              <li><strong>Trials</strong> before you travel</li>
+            </ul>
           </div>
-          <ul className="proof">
-            <li><strong>Every price</strong> in AUD</li>
-            <li><strong>Every vendor</strong> checked by us</li>
-            <li><strong>Trials</strong> before you travel</li>
-          </ul>
+          <div className="hero-art"><ArchArt /></div>
         </div>
-        <svg className="routes" viewBox="-10 95 740 270" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-          <defs>
-            <pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="currentColor" /></pattern>
-            <linearGradient id="trail" x1="0" x2="1"><stop offset="0" stopColor="#b8923f" stopOpacity=".15" /><stop offset="1" stopColor="#b8923f" /></linearGradient>
-          </defs>
-          <rect x="-10" y="95" width="740" height="270" fill="url(#dots)" className="dotgrid" />
-          {SPOTS.map((s, i) => <path key={s.name} d={arc(s.xy)} className="route" style={{ animationDelay: `${i * 0.25}s` }} />)}
-          {SPOTS.map((s, i) => (
-            <g key={s.name} transform={`translate(${s.xy[0]} ${s.xy[1]})`} className="spot" style={{ animationDelay: `${0.8 + i * 0.25}s` }}>
-              <circle r="9" className="halo" /><circle r="3.2" />
-              {s.label && <text x="8" y="-8">{s.name}</text>}
-            </g>
-          ))}
-          <g transform={`translate(${HOME[0]} ${HOME[1]})`}><circle r="12" className="halo home" /><circle r="4.5" className="homedot" /><text x="10" y="18" className="homelabel">Australia</text></g>
-        </svg>
       </section>
 
       <section className="section wrap">
