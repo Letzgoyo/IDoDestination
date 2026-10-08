@@ -41,11 +41,6 @@ export default function Home() {
               <Link className="btn" to="/vendors">Find vendors</Link>
               <a className="btn ghost" href="#destinations">Browse destinations</a>
             </div>
-            <div className="quick">
-              {['Hair & Makeup', 'Photography', 'Venue'].map((c) => (
-                <Link key={c} to={`/vendors?category=${encodeURIComponent(c)}`} className="chip">{c}</Link>
-              ))}
-            </div>
             <ul className="proof">
               <li><strong>Every vendor</strong> checked by us</li>
               <li><strong>Every price</strong> in AUD</li>

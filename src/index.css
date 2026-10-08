@@ -131,8 +131,7 @@ label.check { display: flex; gap: 10px; align-items: center; font-size: .9rem; f
 .hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items: center; padding-top: 72px; padding-bottom: 72px; }
 .hero-copy h1 { font-size: clamp(2.4rem, 4.8vw, 4rem); margin-bottom: .45em; }
 .hero-copy .lead { margin: 0 0 1.8em; }
-.quick { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
-.proof { list-style: none; padding: 0; margin: 32px 0 0; display: flex; gap: 12px 32px; flex-wrap: wrap; color: var(--muted); font-size: .85rem; }
+.proof { list-style: none; padding: 0; margin: 40px 0 0; display: flex; gap: 12px 32px; flex-wrap: wrap; color: var(--muted); font-size: .85rem; }
 .proof strong { color: var(--ink); font-weight: 600; }
 .hero-art { display: flex; justify-content: center; }
 .arch-photo { position: relative; width: 100%; max-width: 400px; aspect-ratio: 4 / 5.2; }
