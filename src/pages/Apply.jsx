@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { usePageMeta } from '../usePageMeta.js'
 import { api, prepareImage, uploadPhoto } from '../api.js'
 
 const blank = { business_name: '', contact_name: '', email: '', phone: '', category: '', destination: '', bio: '', services: [{ name: '', description: '', type: 'package', price_aud: '', instant: false }], based_in_australia: false, instagram: '', website: '' }
 
 export default function Apply() {
+  usePageMeta('Apply to be listed', 'Wedding professionals: apply to be listed and reach Australian couples planning a wedding overseas.')
   const [meta, setMeta] = useState(null)
   const [f, setF] = useState(blank)
   const [state, setState] = useState({ busy: false, done: false, error: '', failed: 0 })
@@ -110,6 +113,7 @@ export default function Apply() {
         </div>
         {state.error && <p className="error">{state.error}</p>}
         <button className="btn" disabled={state.busy}>{state.busy ? 'Uploading…' : 'Submit application'}</button>
+        <small className="muted">By applying you agree to our <Link to="/vendor-terms">vendor terms</Link> and <Link to="/privacy">privacy policy</Link>.</small>
       </form>
     </div>
   )

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { api, aud } from '../api.js'
+import { usePageMeta } from '../usePageMeta.js'
 
 export default function VendorAction() {
+  usePageMeta('Booking request', '', { noindex: true })
   const { vtoken } = useParams()
   const [b, setB] = useState(null)
   const [error, setError] = useState('')

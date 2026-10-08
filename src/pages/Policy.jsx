@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api.js'
+import { usePageMeta } from '../usePageMeta.js'
 
 export default function Policy() {
+  usePageMeta('Cancellations & refunds', 'How cancellations and refunds work when you book a vendor through I Do Destination.')
   const [p, setP] = useState(null)
   useEffect(() => { api.policy().then(setP) }, [])
   if (!p) return <div className="wrap section"><p className="muted">Loading…</p></div>

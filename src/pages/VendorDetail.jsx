@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api, aud, photoUrl } from '../api.js'
+import { usePageMeta } from '../usePageMeta.js'
 import VendorMap from '../components/VendorMap.jsx'
 
 const TYPE = { trial: 'Trial', package: 'Package', deposit: 'Deposit' }
@@ -36,7 +37,7 @@ function BookingForm({ service, onClose }) {
       <label>Message <small>(optional)</small><textarea rows="4" value={f.message} onChange={set('message')} /></label>
       {state.error && <p className="error">{state.error}</p>}
       <button className="btn" disabled={state.busy}>{state.busy ? 'Please wait…' : service.online ? 'Continue to payment' : 'Send request'}</button>
-      <small className="muted">{service.online ? 'You pay securely in AUD. ' : 'No payment now. The vendor confirms, then you pay in AUD. '}<Link to="/cancellation-policy">Cancellation policy</Link></small>
+      <small className="muted">{service.online ? 'You pay securely in AUD. ' : 'No payment now. The vendor confirms, then you pay in AUD. '}<Link to="/cancellation-policy">Cancellation policy</Link>. By continuing you agree to our <Link to="/terms">terms</Link> and <Link to="/privacy">privacy policy</Link>.</small>
     </form>
   )
 }
@@ -73,6 +74,7 @@ export default function VendorDetail() {
 
   useEffect(() => { api.vendor(slug).then(setV).catch((e) => setError(e.message)) }, [slug])
 
+  usePageMeta(v ? `${v.business_name} | ${v.category} in ${v.destination}` : 'Vendor', v?.bio?.slice(0, 155))
   if (error) return <div className="wrap section"><h1>Vendor not found</h1><Link className="btn" to="/vendors">Browse vendors</Link></div>
   if (!v) return <div className="wrap section"><p className="muted">Loading…</p></div>
   return (

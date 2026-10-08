@@ -21,3 +21,9 @@ If you are developing a production application, we recommend using TypeScript wi
 - Payments use Stripe Checkout in AUD. Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` (webhook endpoint: `/api/stripe/webhook`, event `checkout.session.completed`). Without a key, bookings are vendor-confirmed requests only.
 - **Stripe Connect (Express):** on approval each vendor gets a private link (`/vendor/:token`) to connect payouts. Online payments are destination charges: the couple pays in AUD, `PLATFORM_FEE_PERCENT` stays with the platform, the rest transfers to the vendor's connected account and Stripe pays them out in their local currency. Services only show "Book now" once the vendor is connected; otherwise they are requests.
 - Enable Connect in the Stripe dashboard. The platform webhook only needs `checkout.session.completed`; vendor payout status refreshes itself when the vendor opens their payouts page. Cross-border payouts depend on Stripe's supported countries for an Australian platform; edit `PAYOUT_COUNTRIES` in `server/stripe.js` after checking with Stripe.
+
+## Docs, SEO and photos
+- `docs/` holds the launch checklist and the legal drafts (terms, privacy, vendor terms, cancellations). The site's legal pages render directly from `docs/legal/*.md`. They are drafts until a solicitor reviews them (`src/legal/config.js`).
+- `server/seo.js` adds per-page titles, descriptions, social-share tags, structured data, `robots.txt` and `sitemap.xml` (set `SITE_URL` to your live address).
+- Vendor photos are uploaded with the application, stored in the database (`vendor_photos`) and shown on listings after approval.
+- The map uses OpenStreetMap tiles (no key). Set `MAP_TILES_URL` / `MAP_ATTRIBUTION` for another provider.

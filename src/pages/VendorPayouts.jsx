@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '../api.js'
+import { usePageMeta } from '../usePageMeta.js'
 
 export default function VendorPayouts() {
+  usePageMeta('Vendor payouts', '', { noindex: true })
   const { mtoken } = useParams()
   const [d, setD] = useState(null)
   const [country, setCountry] = useState('AU')

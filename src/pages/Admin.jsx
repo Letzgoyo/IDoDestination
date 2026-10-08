@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api, aud } from '../api.js'
+import { usePageMeta } from '../usePageMeta.js'
 
 const KEY = 'ido_admin_token'
 const load = () => { try { return sessionStorage.getItem(KEY) || '' } catch { return '' } }
@@ -16,6 +17,7 @@ function AdminPhoto({ id, token }) {
 }
 
 export default function Admin() {
+  usePageMeta('Admin', '', { noindex: true })
   const [token, setToken] = useState(load)
   const [password, setPassword] = useState('')
   const [vendors, setVendors] = useState([])

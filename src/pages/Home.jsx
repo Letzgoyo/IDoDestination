@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { usePageMeta } from '../usePageMeta.js'
 
 function ArchPhoto() {
   return (
@@ -29,6 +30,7 @@ const DESTS = [
 const CATS = ['Hair & Makeup', 'Photography', 'Videography', 'Venue', 'Planner & Coordinator', 'Florist', 'Celebrant', 'Catering', 'Music & DJ']
 
 export default function Home() {
+  usePageMeta('', 'Hand-picked wedding vendors for Australians marrying overseas, with prices in AUD and trials before you fly.')
   return (
     <>
       <section className="hero2">

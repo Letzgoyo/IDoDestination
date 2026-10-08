@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../api.js'
+import { usePageMeta } from '../usePageMeta.js'
 import VendorMap from '../components/VendorMap.jsx'
 import VendorCard from '../components/VendorCard.jsx'
 
 export default function Vendors() {
+  usePageMeta('Find wedding vendors overseas', 'Browse approved wedding vendors by destination and category, with every price in AUD.')
   const [vendors, setVendors] = useState(null)
   const [meta, setMeta] = useState(null)
   const [error, setError] = useState('')

@@ -5,6 +5,7 @@ import Vendors from './pages/Vendors.jsx'
 import VendorDetail from './pages/VendorDetail.jsx'
 import Apply from './pages/Apply.jsx'
 import Policy from './pages/Policy.jsx'
+import Legal from './pages/Legal.jsx'
 import Admin from './pages/Admin.jsx'
 import Booking from './pages/Booking.jsx'
 import VendorAction from './pages/VendorAction.jsx'
@@ -37,6 +38,9 @@ export default function App() {
           <Route path="/vendor-action/:vtoken" element={<VendorAction />} />
           <Route path="/vendor/:mtoken" element={<VendorPayouts />} />
           <Route path="/cancellation-policy" element={<Policy />} />
+          <Route path="/terms" element={<Legal doc="terms" />} />
+          <Route path="/privacy" element={<Legal doc="privacy" />} />
+          <Route path="/vendor-terms" element={<Legal doc="vendorTerms" />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<div className="wrap section"><h1>Page not found</h1><Link className="btn" to="/">Back home</Link></div>} />
         </Routes>
@@ -44,7 +48,8 @@ export default function App() {
       <footer className="footer">
         <span className="logo">I Do <em>Destination</em></span>
         <p>Every vendor is checked by our team. All prices and trials in Australian dollars.</p>
-        <p><Link to="/cancellation-policy">Cancellation policy</Link> · <Link to="/apply">Are you a wedding vendor? Apply to be listed</Link></p>
+        <p><Link to="/terms">Terms</Link> · <Link to="/privacy">Privacy</Link> · <Link to="/cancellation-policy">Cancellations &amp; refunds</Link></p>
+        <p><Link to="/apply">Are you a wedding vendor? Apply to be listed</Link> · <Link to="/vendor-terms">Vendor terms</Link></p>
       </footer>
     </>
   )

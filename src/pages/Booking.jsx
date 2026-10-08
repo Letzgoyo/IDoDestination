@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api, aud } from '../api.js'
+import { usePageMeta } from '../usePageMeta.js'
 
 const MSG = {
   requested: 'Your request has been sent. The vendor will confirm shortly and we will email you.',
@@ -11,6 +12,7 @@ const MSG = {
 }
 
 export default function Booking() {
+  usePageMeta('Your booking', '', { noindex: true })
   const { token } = useParams()
   const [b, setB] = useState(null)
   const [error, setError] = useState('')

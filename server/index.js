@@ -7,6 +7,7 @@ import { DESTINATIONS, CATEGORIES } from './destinations.js'
 import { router as bookings, webhook, issueRefund, getByToken } from './bookings.js'
 import { router as connect } from './connect.js'
 import { router as photos } from './photos.js'
+import { seoRoutes, pageHandler } from './seo.js'
 import { stripe } from './stripe.js'
 import { randomBytes } from 'node:crypto'
 
@@ -186,11 +187,14 @@ app.post('/api/admin/vendors/:id/status', requireAdmin, async (req, res) => {
     await sendMail({ to: v.email, subject: 'Your I Do Destination application', text: `Hi ${v.contact_name},\n\nThanks for applying. Unfortunately we're unable to list ${v.business_name} at this time.${notes ? `\n\n${notes}` : ''}\n\nI Do Destination` })
 })
 
+seoRoutes(app)
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found' }))
 
 if (existsSync('dist')) {
-  app.use(express.static('dist'))
-  app.get(/.*/, (_req, res) => res.sendFile('index.html', { root: 'dist' }))
+  // index: false so every page (including "/") goes through the SEO handler below.
+  app.use(express.static('dist', { index: false }))
+  const page = pageHandler('dist/index.html')
+  app.get(/.*/, page)
 }
 
 app.listen(PORT, () => console.log(`API listening on :${PORT}`))
