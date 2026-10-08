@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { api } from '../api.js'
 import VendorMap from '../components/VendorMap.jsx'
 import VendorCard from '../components/VendorCard.jsx'
@@ -7,8 +8,9 @@ export default function Vendors() {
   const [vendors, setVendors] = useState(null)
   const [meta, setMeta] = useState(null)
   const [error, setError] = useState('')
-  const [category, setCategory] = useState('')
-  const [destination, setDestination] = useState('')
+  const [params] = useSearchParams()
+  const [category, setCategory] = useState(params.get('category') || '')
+  const [destination, setDestination] = useState(params.get('destination') || '')
   const [trialOnly, setTrialOnly] = useState(false)
   const [q, setQ] = useState('')
 
