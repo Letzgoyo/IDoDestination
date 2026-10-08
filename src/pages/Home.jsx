@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 function ArchPhoto() {
   return (
     <div className="arch-photo">
-      <span className="arch-ring" aria-hidden="true" />
       <img src="/images/hero.webp" alt="A bride in a white gown looking out over Lake Como from a jetty" width="952" height="688" fetchpriority="high" />
     </div>
   )

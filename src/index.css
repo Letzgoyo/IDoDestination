@@ -136,11 +136,10 @@ label.check { display: flex; gap: 10px; align-items: center; font-size: .9rem; f
 .proof strong { color: var(--ink); font-weight: 600; }
 .hero-art { display: flex; justify-content: center; }
 .arch-photo { position: relative; width: 100%; max-width: 400px; aspect-ratio: 4 / 5.2; }
-.arch-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 45%; border-radius: 999px 999px 6px 6px; display: block; box-shadow: 0 30px 60px -25px rgba(70, 40, 20, .45); }
-.arch-ring { position: absolute; inset: -14px -14px 14px 14px; border: 1.5px solid var(--gold); border-radius: 999px 999px 6px 6px; opacity: .7; pointer-events: none; }
+.arch-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 46% 45%; border-radius: 999px 999px 6px 6px; display: block; box-shadow: 0 30px 60px -25px rgba(70, 40, 20, .45); }
 @media (max-width: 900px) {
   .hero-grid { grid-template-columns: 1fr; padding-top: 48px; padding-bottom: 56px; }
-  .arch-photo { max-width: 300px; margin: 0 14px 0 0; }
+  .arch-photo { max-width: 300px; }
 }
 
 .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s ease, transform .8s ease; }
