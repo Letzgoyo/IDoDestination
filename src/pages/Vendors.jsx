@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../api.js'
 import { usePageMeta } from '../usePageMeta.js'
-import VendorMap from '../components/VendorMap.jsx'
 import VendorCard from '../components/VendorCard.jsx'
+
+// Loaded on demand: the country shapes are a large file the rest of the site doesn't need.
+const RegionMap = lazy(() => import('../components/RegionMap.jsx'))
 
 export default function Vendors() {
   usePageMeta('Find wedding vendors overseas', 'Browse approved wedding vendors by destination and category, with every price in AUD.')
@@ -20,11 +22,13 @@ export default function Vendors() {
     Promise.all([api.vendors(), api.meta()]).then(([v, m]) => { setVendors(v); setMeta(m) }).catch((e) => setError(e.message))
   }, [])
 
-  const filtered = useMemo(() => (vendors || []).filter((v) =>
+  const matching = useMemo(() => (vendors || []).filter((v) =>
     (!category || v.category === category) &&
-    (!destination || v.destination === destination) &&
     (!trialOnly || v.offers_trial) &&
-    (!q || `${v.business_name} ${v.bio}`.toLowerCase().includes(q.toLowerCase()))), [vendors, category, destination, trialOnly, q])
+    (!q || `${v.business_name} ${v.bio}`.toLowerCase().includes(q.toLowerCase()))), [vendors, category, trialOnly, q])
+  const counts = useMemo(() => matching.reduce((acc, v) => ({ ...acc, [v.destination]: (acc[v.destination] || 0) + 1 }), {}), [matching])
+  const filtered = useMemo(() => matching.filter((v) => !destination || v.destination === destination), [matching, destination])
+  const withVendors = (meta?.destinations || []).filter((d) => counts[d.name])
 
   return (
     <div className="wrap section">
@@ -47,7 +51,18 @@ export default function Vendors() {
       {!vendors && !error && <p className="muted">Loading…</p>}
       {vendors && (
         <>
-          <VendorMap vendors={filtered} onSelect={setDestination} />
+          <p className="muted map-hint">{withVendors.length ? 'Select a shaded country on the map to see its vendors.' : 'No vendors match these filters yet.'}</p>
+          <Suspense fallback={<div className="map" style={{ height: 520 }} />}>
+            <RegionMap destinations={meta?.destinations || []} counts={counts} selected={destination} onSelect={setDestination} />
+          </Suspense>
+          <div className="chips country-chips" role="group" aria-label="Browse by country">
+            {withVendors.map((d) => (
+              <button key={d.name} className={`chip${destination === d.name ? ' on' : ''}`} aria-pressed={destination === d.name} onClick={() => setDestination(destination === d.name ? '' : d.name)}>
+                {d.name} <span className="chip-n">{counts[d.name]}</span>
+              </button>
+            ))}
+            {destination && <button className="chip clear" onClick={() => setDestination('')}>Clear ×</button>}
+          </div>
           <p className="muted count">{filtered.length} vendor{filtered.length === 1 ? '' : 's'}</p>
           {filtered.length === 0
             ? <p>No vendors match yet. Try widening your filters.</p>

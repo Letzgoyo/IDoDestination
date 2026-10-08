@@ -257,3 +257,13 @@ label.check { display: flex; gap: 10px; align-items: center; font-size: .9rem; f
 
 .g-all { --bg: radial-gradient(circle at 70% 20%, #f6e6c4, transparent 50%), linear-gradient(165deg, #9a7b3f, #4a3a1c); }
 .g-all .dest-go { opacity: 1; transform: none; }
+
+/* Region map */
+.map-hint { margin: 0 0 10px; font-size: .9rem; }
+.country-chips { margin: 14px 0 6px; }
+.chip { font: inherit; cursor: pointer; }
+.chip.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.chip-n { display: inline-block; margin-left: 6px; font-size: .75rem; opacity: .7; }
+.chip.clear { border-style: dashed; }
+.pin.sel { background: var(--gold); color: var(--ink); border-color: var(--ink); }
+.leaflet-interactive { cursor: pointer; }
